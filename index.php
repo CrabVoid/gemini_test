@@ -1,8 +1,15 @@
+<?php
+require_once 'ClientRepository.php';
+
+$repository = new ClientRepository();
+$clients = $repository->getAllWithHierarchy();
+?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Database Content - Hierarchical View</title>
+    <title>Database Content - OOP Hierarchical View</title>
     <style>
         body { font-family: sans-serif; background-color: #f4f4f4; padding: 20px; }
         .client-card { background: #fff; border-radius: 8px; margin-bottom: 30px; padding: 20px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); border-left: 5px solid #007bff; }
@@ -21,45 +28,43 @@
 </head>
 <body>
 
-<h1>Hierarchical Database Overview</h1>
-
-<?php require_once 'db_connect.php'; ?>
+<h1>Client & Order Overview (OOP Version)</h1>
 
 <?php if (empty($clients)): ?>
     <p>No records found.</p>
 <?php else: ?>
     <?php foreach ($clients as $client): ?>
         <div class="client-card">
-            <!-- LEVEL 1: CLIENT -->
+            <!-- Client Object Properties -->
             <div class="client-info">
-                <h2><?php echo htmlspecialchars($client['info']['name']); ?> (ID: <?php echo $client['info']['id']; ?>)</h2>
+                <h2><?php echo htmlspecialchars($client->name); ?> (ID: <?php echo $client->id; ?>)</h2>
                 <div class="client-meta">
-                    Email: <?php echo htmlspecialchars($client['info']['email']); ?> | Points: <?php echo $client['info']['points']; ?>
+                    Email: <?php echo htmlspecialchars($client->email); ?> | Points: <?php echo $client->points; ?>
                 </div>
             </div>
 
-            <?php if (empty($client['orders'])): ?>
-                <p style="color: #999; margin-left: 40px;">No orders found for this client.</p>
+            <?php if (empty($client->orders)): ?>
+                <p style="color: #999; margin-left: 40px;">No orders found.</p>
             <?php else: ?>
-                <?php foreach ($client['orders'] as $order): ?>
-                    <!-- LEVEL 2: ORDER -->
+                <?php foreach ($client->orders as $order): ?>
+                    <!-- Order Object Properties -->
                     <div class="order-section">
                         <div class="order-header">
-                            Order #<?php echo $order['id']; ?> | <?php echo $order['date']; ?> 
-                            <span class="order-status"><?php echo htmlspecialchars($order['status']); ?></span>
+                            Order #<?php echo $order->id; ?> | <?php echo $order->date; ?> 
+                            <span class="order-status"><?php echo htmlspecialchars($order->status); ?></span>
                         </div>
 
-                        <?php if (empty($order['items'])): ?>
-                            <p style="color: #999; margin-left: 40px;">Empty order (no items).</p>
+                        <?php if (empty($order->items)): ?>
+                            <p style="color: #999; margin-left: 40px;">Empty order.</p>
                         <?php else: ?>
                             <ul class="items-list">
-                                <?php foreach ($order['items'] as $item): ?>
-                                    <!-- LEVEL 3: ITEM -->
+                                <?php foreach ($order->items as $item): ?>
+                                    <!-- OrderItem Object Properties & Method -->
                                     <li class="item-row">
-                                        <span class="item-product"><?php echo htmlspecialchars($item['product']); ?></span>
-                                        <span>Qty: <?php echo $item['qty']; ?></span>
-                                        <span>Price: $<?php echo number_format($item['price'], 2); ?></span>
-                                        <span>Total: $<?php echo number_format($item['qty'] * $item['price'], 2); ?></span>
+                                        <span class="item-product"><?php echo htmlspecialchars($item->product); ?></span>
+                                        <span>Qty: <?php echo $item->qty; ?></span>
+                                        <span>Price: $<?php echo number_format($item->price, 2); ?></span>
+                                        <span>Total: $<?php echo number_format($item->getTotal(), 2); ?></span>
                                     </li>
                                 <?php endforeach; ?>
                             </ul>
