@@ -41,9 +41,51 @@
         </div>
     </div>
 
+    <!-- 
+    // =========================================================================
+    // SECTION: Status Filter Controls
+    // Purpose: Allows filtering orders by status (pending, shipped, completed)
+    // =========================================================================
+    -->
+    <div style="margin-bottom: 20px; padding: 15px; background: #fff; border-radius: 8px; box-shadow: 0 2px 5px #ccc;">
+        <strong style="color: #2c3e50;">Filter by Status:</strong>
+        <div style="margin-top: 10px; display: flex; gap: 8px; flex-wrap: wrap;">
+            <a href="/orders.php" style="padding: 6px 12px; border-radius: 4px; text-decoration: none; background: <?php echo ($statusFilter === null) ? '#27ae60' : '#95a5a6'; ?>; color: white; transition: background 0.2s;" 
+               onmouseover="this.style.background='<?php echo ($statusFilter === null) ? '#229954' : '#7f8c8d'; ?>'" 
+               onmouseout="this.style.background='<?php echo ($statusFilter === null) ? '#27ae60' : '#95a5a6'; ?>'">
+                All Orders
+            </a>
+            <a href="/orders.php?status=pending" style="padding: 6px 12px; border-radius: 4px; text-decoration: none; background: <?php echo ($statusFilter === 'pending') ? '#f39c12' : '#95a5a6'; ?>; color: white; transition: background 0.2s;" 
+               onmouseover="this.style.background='<?php echo ($statusFilter === 'pending') ? '#e67e22' : '#7f8c8d'; ?>'" 
+               onmouseout="this.style.background='<?php echo ($statusFilter === 'pending') ? '#f39c12' : '#95a5a6'; ?>'">
+                Pending
+            </a>
+            <a href="/orders.php?status=shipped" style="padding: 6px 12px; border-radius: 4px; text-decoration: none; background: <?php echo ($statusFilter === 'shipped') ? '#3498db' : '#95a5a6'; ?>; color: white; transition: background 0.2s;" 
+               onmouseover="this.style.background='<?php echo ($statusFilter === 'shipped') ? '#2980b9' : '#7f8c8d'; ?>'" 
+               onmouseout="this.style.background='<?php echo ($statusFilter === 'shipped') ? '#3498db' : '#95a5a6'; ?>'">
+                Shipped
+            </a>
+            <a href="/orders.php?status=completed" style="padding: 6px 12px; border-radius: 4px; text-decoration: none; background: <?php echo ($statusFilter === 'completed') ? '#27ae60' : '#95a5a6'; ?>; color: white; transition: background 0.2s;" 
+               onmouseover="this.style.background='<?php echo ($statusFilter === 'completed') ? '#229954' : '#7f8c8d'; ?>'" 
+               onmouseout="this.style.background='<?php echo ($statusFilter === 'completed') ? '#27ae60' : '#95a5a6'; ?>'">
+                Completed
+            </a>
+        </div>
+    </div>
+    <!-- -------------------------------------------------------------------------
+    // END SECTION: Status Filter Controls
+    // -------------------------------------------------------------------------
+    -->
+
     <?php if (empty($orders)): ?>
         <div class="card empty-message">
-            <p>No orders found.</p>
+            <p>
+                <?php if ($statusFilter !== null): ?>
+                    No orders found with status: <strong><?php echo htmlspecialchars(ucfirst($statusFilter)); ?></strong>
+                <?php else: ?>
+                    No orders found.
+                <?php endif; ?>
+            </p>
         </div>
     <?php else: ?>
         <?php foreach ($orders as $order): ?>
