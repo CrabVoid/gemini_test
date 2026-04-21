@@ -4,7 +4,7 @@
 // Purpose: Handles data fetching and complex mapping of relational data.
 // =========================================================================
 
-require_once 'Database.php';
+require_once 'db/Database.php';
 require_once 'Models.php';
 
 class ClientRepository {

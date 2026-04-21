@@ -9,6 +9,7 @@ class Database {
     private $pdo;
 
     private function __construct() {
+        // Use __DIR__ to ensure the path is always relative to THIS file
         $dbFile = __DIR__ . DIRECTORY_SEPARATOR . 'tasker.db';
         try {
             $this->pdo = new PDO("sqlite:" . $dbFile);
