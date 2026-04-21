@@ -35,9 +35,10 @@
 <body>
 
     <div class="header">
-        <h1>Orders List</h1>
+        <h1>📦 Orders</h1>
         <div class="nav-links">
-            <a href="/">← Back to Customers</a>
+            <a href="/">← Home</a>
+            <a href="/customers.php">👥 Customers</a>
         </div>
     </div>
 
