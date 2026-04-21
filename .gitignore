@@ -1,0 +1,19 @@
+# =========================================================================
+# SECTION: Ignore List
+# Purpose: Prevents sensitive data and build artifacts from entering git.
+# =========================================================================
+
+# Sensitive files
+.env
+
+# Database files
+*.db
+db/*.db
+
+# IDE specific files
+.vscode/
+.idea/
+
+# -------------------------------------------------------------------------
+# END SECTION: Ignore List
+# -------------------------------------------------------------------------

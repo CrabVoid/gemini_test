@@ -1,16 +1,19 @@
 <?php
 // =========================================================================
 // SECTION: Database Connection (Singleton)
-// Purpose: Provides a single, shared PDO instance for the entire application.
+// Purpose: Provides a single, shared PDO instance using global config.
 // =========================================================================
+
+require_once __DIR__ . '/../config.php';
 
 class Database {
     private static $instance = null;
     private $pdo;
 
     private function __construct() {
-        // Use __DIR__ to ensure the path is always relative to THIS file
-        $dbFile = __DIR__ . DIRECTORY_SEPARATOR . 'tasker.db';
+        // Use the Config helper to fetch the DB path from environment/defaults
+        $dbFile = Config::get('DB_FILE', __DIR__ . DIRECTORY_SEPARATOR . 'tasker.db');
+        
         try {
             $this->pdo = new PDO("sqlite:" . $dbFile);
             $this->pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
