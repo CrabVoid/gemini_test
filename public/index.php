@@ -4,13 +4,13 @@ error_reporting(E_ALL);
 
 // =========================================================================
 // SECTION: Logic & Data Initialization
-// Purpose: Orchestrates the data fetching and delegates to the view.
+// Purpose: Orchestrates data fetching via the Customer Model.
 // =========================================================================
 
-require_once __DIR__ . '/../ClientRepository.php';
+require_once __DIR__ . '/../src/Models/Customer.php';
 
-$repo = new ClientRepository();
-$clients = $repo->getAllWithHierarchy();
+// Fetch data using the static Model function
+$clients = Customer::all();
 
 // Default: Show orders unless explicitly set to 'none'
 $showOrders = !isset($_GET['with-orders']) || $_GET['with-orders'] !== 'none';

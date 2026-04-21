@@ -1,24 +1,30 @@
 <?php
 // =========================================================================
-// SECTION: Client Repository
-// Purpose: Handles data fetching and complex mapping of relational data.
+// SECTION: Customer Model
+// Purpose: Encapsulates business logic and data access for Customers.
+// Note: Currently used as a service-layer with static methods.
 // =========================================================================
 
-require_once __DIR__ . '/db/Database.php';
-require_once __DIR__ . '/Models.php';
+<?php
+// =========================================================================
+// SECTION: Customer Model
+// Purpose: Encapsulates business logic and data access for Customers.
+// Note: Currently used as a service-layer with static methods.
+// =========================================================================
 
-class ClientRepository {
-    private $pdo;
+require_once __DIR__ . '/../../db/Database.php';
+require_once __DIR__ . '/../../Models.php';
 
-    public function __construct() {
-        $this->pdo = Database::getInstance()->getConnection();
-    }
+class Customer {
 
     /**
-     * Fetches all clients with their nested orders and items.
-     * Simplified using a lookup-and-assign pattern.
+     * Fetches all customers with their full hierarchical order data.
+     * 
+     * @return array List of Client objects with nested Orders and Items.
      */
-    public function getAllWithHierarchy() {
+    public static function all() {
+        $pdo = Database::getInstance()->getConnection();
+
         $query = "
             SELECT 
                 c.id as client_id, c.firstname, c.lastname, c.email, c.points,
@@ -32,9 +38,16 @@ class ClientRepository {
             ORDER BY c.id, o.id, oi.id
         ";
         
-        $stmt = $this->pdo->query($query);
+        $stmt = $pdo->query($query);
         $rawData = $stmt->fetchAll();
 
+        return self::mapHierarchy($rawData);
+    }
+
+    /**
+     * Helper to map flat database rows into a nested object hierarchy.
+     */
+    private static function mapHierarchy($rawData) {
         $clients = [];
         foreach ($rawData as $row) {
             $cid = $row['client_id'];
@@ -75,6 +88,6 @@ class ClientRepository {
 }
 
 // -------------------------------------------------------------------------
-// END SECTION: Client Repository
+// END SECTION: Customer Model
 // -------------------------------------------------------------------------
 ?>
