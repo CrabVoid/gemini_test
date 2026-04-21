@@ -20,8 +20,10 @@
         .item-details { color: #7f8c8d; font-size: 0.9em; }
         .price-text { font-family: monospace; }
         .total-row { border-top: 1px dashed #ddd; margin-top: 5px; padding-top: 5px; text-align: right; font-weight: bold; }
-        .btn-full { display: inline-block; background: #3498db; color: #fff; padding: 5px 10px; text-decoration: none; border-radius: 4px; font-size: 0.85em; margin-bottom: 10px; }
-        .btn-full:hover { background: #2980b9; }
+        .btn-toggle { display: inline-block; background: #3498db; color: #fff; padding: 6px 12px; text-decoration: none; border-radius: 4px; font-size: 0.85em; margin-bottom: 15px; font-weight: bold; transition: background 0.2s; }
+        .btn-toggle:hover { background: #2980b9; }
+        .btn-hide { background: #95a5a6; }
+        .btn-hide:hover { background: #7f8c8d; }
     </style>
     <!-- -------------------------------------------------------------------------
     // END SECTION: Styling
@@ -32,11 +34,21 @@
 
     <h1 style="color: #2c3e50;">Store Dashboard</h1>
 
+    <!-- 
+    // =========================================================================
+    // SECTION: Toggle Control
+    // Purpose: Provides a button to show or hide the detailed order hierarchy.
+    // =========================================================================
+    -->
     <?php if (!$showOrders): ?>
-        <a href="?with-orders=full" class="btn-full">View Detailed Orders</a>
+        <a href="?with-orders=full" class="btn-toggle">Show Orders</a>
     <?php else: ?>
-        <a href="?" class="btn-full" style="background: #95a5a6;">Hide Orders</a>
+        <a href="?with-orders=none" class="btn-toggle btn-hide">Hide Orders</a>
     <?php endif; ?>
+    <!-- -------------------------------------------------------------------------
+    // END SECTION: Toggle Control
+    // -------------------------------------------------------------------------
+    -->
 
     <!-- 
     // =========================================================================
