@@ -31,18 +31,10 @@
     -->
 </head>
 <body>
+    <?php require_once __DIR__ . '/../includes/navigation.php'; ?>
 
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
-        <h1 style="color: #2c3e50; margin: 0;">👥 Customers</h1>
-        <div style="display: flex; gap: 10px;">
-            <a href="/" style="display: inline-block; background: #95a5a6; color: white; padding: 8px 16px; text-decoration: none; border-radius: 4px; font-weight: bold; transition: background 0.2s;" onmouseover="this.style.background='#7f8c8d'" onmouseout="this.style.background='#95a5a6'">
-                ← Home
-            </a>
-            <a href="/orders.php" style="display: inline-block; background: #27ae60; color: white; padding: 8px 16px; text-decoration: none; border-radius: 4px; font-weight: bold; transition: background 0.2s;" onmouseover="this.style.background='#229954'" onmouseout="this.style.background='#27ae60'">
-                📦 Orders →
-            </a>
-        </div>
-    </div>
+    <!-- Page Title -->
+    <h2 style="color: #2c3e50; margin-bottom: 20px; border-bottom: 2px solid #3498db; padding-bottom: 10px;">Customers Directory</h2>
 
     <!-- 
     // =========================================================================

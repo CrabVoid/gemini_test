@@ -44,6 +44,7 @@
     </style>
 </head>
 <body>
+    <?php require_once __DIR__ . '/../includes/navigation.php'; ?>
 
     <div class="container">
         <!-- =====================================================================

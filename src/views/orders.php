@@ -5,10 +5,12 @@
     <title>Tasker - Orders List</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font: 14px Arial, sans-serif; background: #eee; margin: 20px; }
-        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-        h1 { color: #2c3e50; }
-        .nav-links { display: flex; gap: 10px; }
+        body { font: 14px Arial, sans-serif; background: #eee; margin: 0; padding: 20px; }
+        .container { max-width: 1200px; margin: 0 auto; }
+        .page-title { color: #2c3e50; margin-bottom: 20px; border-bottom: 2px solid #3498db; padding-bottom: 10px; }
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; display: none; }
+        h1 { color: #2c3e50; display: none; }
+        .nav-links { display: flex; gap: 10px; display: none; }
         .nav-links a { background: #3498db; color: white; padding: 8px 16px; text-decoration: none; border-radius: 4px; transition: background 0.2s; }
         .nav-links a:hover { background: #2980b9; }
         .card { background: #fff; padding: 15px; margin-bottom: 15px; border-radius: 8px; box-shadow: 0 2px 5px #ccc; }
