@@ -1,5 +1,9 @@
 <?php
-// ClientRepository.php
+// =========================================================================
+// SECTION: Client Repository
+// Purpose: Handles data fetching and complex mapping of relational data.
+// =========================================================================
+
 require_once 'Database.php';
 require_once 'Models.php';
 
@@ -10,6 +14,10 @@ class ClientRepository {
         $this->pdo = Database::getInstance()->getConnection();
     }
 
+    /**
+     * Fetches all clients with their nested orders and items.
+     * Simplified using a lookup-and-assign pattern.
+     */
     public function getAllWithHierarchy() {
         $query = "
             SELECT 
@@ -33,7 +41,7 @@ class ClientRepository {
             $oid = $row['order_id'];
             $iid = $row['item_id'];
 
-            // Map Client
+            // 1. Map Client if not exists
             if (!isset($clients[$cid])) {
                 $clients[$cid] = new Client(
                     $cid,
@@ -43,28 +51,30 @@ class ClientRepository {
                 );
             }
 
-            // Map Order
-            if ($oid) {
-                if (!isset($clients[$cid]->orders[$oid])) {
-                    $clients[$cid]->addOrder(new Order(
-                        $oid,
-                        $row['order_status'],
-                        $row['order_date']
-                    ));
-                }
+            // 2. Map Order if exists and not already mapped
+            if ($oid && !isset($clients[$cid]->orders[$oid])) {
+                $clients[$cid]->addOrder(new Order(
+                    $oid,
+                    $row['order_status'],
+                    $row['order_date']
+                ));
+            }
 
-                // Map Item
-                if ($iid) {
-                    $clients[$cid]->orders[$oid]->addItem(new OrderItem(
-                        $iid,
-                        $row['product_name'],
-                        $row['quantity'],
-                        $row['price_at_purchase']
-                    ));
-                }
+            // 3. Map Item if exists
+            if ($iid) {
+                $clients[$cid]->orders[$oid]->addItem(new OrderItem(
+                    $iid,
+                    $row['product_name'],
+                    $row['quantity'],
+                    $row['price_at_purchase']
+                ));
             }
         }
         return $clients;
     }
 }
+
+// -------------------------------------------------------------------------
+// END SECTION: Client Repository
+// -------------------------------------------------------------------------
 ?>
