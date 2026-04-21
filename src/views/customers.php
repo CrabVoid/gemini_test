@@ -2,11 +2,11 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Tasker - Client Overview</title>
+    <title>Tasker - Customers List</title>
     <!-- 
     // =========================================================================
     // SECTION: Styling
-    // Purpose: Visual presentation of the client list.
+    // Purpose: Visual presentation of the customers list.
     // =========================================================================
     -->
     <style>
@@ -20,6 +20,8 @@
         .item-details { color: #7f8c8d; font-size: 0.9em; }
         .price-text { font-family: monospace; }
         .total-row { border-top: 1px dashed #ddd; margin-top: 5px; padding-top: 5px; text-align: right; font-weight: bold; }
+        .btn-full { display: inline-block; background: #3498db; color: #fff; padding: 5px 10px; text-decoration: none; border-radius: 4px; font-size: 0.85em; margin-bottom: 10px; }
+        .btn-full:hover { background: #2980b9; }
     </style>
     <!-- -------------------------------------------------------------------------
     // END SECTION: Styling
@@ -30,10 +32,16 @@
 
     <h1 style="color: #2c3e50;">Store Dashboard</h1>
 
+    <?php if (!$showOrders): ?>
+        <a href="?with-orders=full" class="btn-full">View Detailed Orders</a>
+    <?php else: ?>
+        <a href="?" class="btn-full" style="background: #95a5a6;">Hide Orders</a>
+    <?php endif; ?>
+
     <!-- 
     // =========================================================================
     // SECTION: Content Rendering
-    // Purpose: Loops through data and outputs structured HTML.
+    // Purpose: Loops through customers and optionally their orders.
     // =========================================================================
     -->
     <?php foreach ($clients as $c): ?>
@@ -43,37 +51,39 @@
                 <span style="font-size: 0.8em; color: #7f8c8d;">(ID: <?= $c->id ?> | <?= htmlspecialchars($c->email) ?>)</span>
             </div>
             
-            <?php if (empty($c->orders)): ?>
-                <p style="color: #95a5a6; font-style: italic;">No orders found.</p>
-            <?php endif; ?>
-
-            <?php foreach ($c->orders as $o): ?>
-                <div class="order-container">
-                    <div class="order-title">
-                        Order #<?= $o->id ?> 
-                        <span style="font-weight: normal; font-size: 0.9em;">[<?= htmlspecialchars($o->status) ?>]</span>
-                    </div>
-                    <div style="font-size: 0.85em; color: #95a5a6; margin-bottom: 5px;">Date: <?= htmlspecialchars($o->date) ?></div>
-                    
-                    <div class="item-list">
-                        <?php $orderTotal = 0; ?>
-                        <?php foreach ($o->items as $i): ?>
-                            <?php $itemTotal = $i->getTotal(); $orderTotal += $itemTotal; ?>
-                            <div class="item-row">
-                                <span>
-                                    <?= htmlspecialchars($i->product) ?> 
-                                    <span class="item-details">(x<?= $i->qty ?> @ <?= number_format($i->price, 2) ?> €)</span>
-                                </span>
-                                <span class="price-text"><?= number_format($itemTotal, 2) ?> €</span>
+            <?php if ($showOrders): ?>
+                <?php if (empty($c->orders)): ?>
+                    <p style="color: #95a5a6; font-style: italic;">No orders found.</p>
+                <?php else: ?>
+                    <?php foreach ($c->orders as $o): ?>
+                        <div class="order-container">
+                            <div class="order-title">
+                                Order #<?= $o->id ?> 
+                                <span style="font-weight: normal; font-size: 0.9em;">[<?= htmlspecialchars($o->status) ?>]</span>
                             </div>
-                        <?php endforeach; ?>
-                        
-                        <div class="total-row">
-                            Total: <span class="price-text" style="color: #e74c3c;"><?= number_format($orderTotal, 2) ?> €</span>
+                            <div style="font-size: 0.85em; color: #95a5a6; margin-bottom: 5px;">Date: <?= htmlspecialchars($o->date) ?></div>
+                            
+                            <div class="item-list">
+                                <?php $orderTotal = 0; ?>
+                                <?php foreach ($o->items as $i): ?>
+                                    <?php $itemTotal = $i->getTotal(); $orderTotal += $itemTotal; ?>
+                                    <div class="item-row">
+                                        <span>
+                                            <?= htmlspecialchars($i->product) ?> 
+                                            <span class="item-details">(x<?= $i->qty ?> @ <?= number_format($i->price, 2) ?> €)</span>
+                                        </span>
+                                        <span class="price-text"><?= number_format($itemTotal, 2) ?> €</span>
+                                    </div>
+                                <?php endforeach; ?>
+                                
+                                <div class="total-row">
+                                    Total: <span class="price-text" style="color: #e74c3c;"><?= number_format($orderTotal, 2) ?> €</span>
+                                </div>
+                            </div>
                         </div>
-                    </div>
-                </div>
-            <?php endforeach; ?>
+                    <?php endforeach; ?>
+                <?php endif; ?>
+            <?php endif; ?>
         </div>
     <?php endforeach; ?>
     <!-- -------------------------------------------------------------------------
