@@ -34,6 +34,12 @@
 
     <h1 style="color: #2c3e50;">Store Dashboard</h1>
 
+    <div style="margin-bottom: 20px;">
+        <a href="/orders.php" style="display: inline-block; background: #27ae60; color: white; padding: 8px 16px; text-decoration: none; border-radius: 4px; font-weight: bold; transition: background 0.2s;" onmouseover="this.style.background='#229954'" onmouseout="this.style.background='#27ae60'">
+            View All Orders →
+        </a>
+    </div>
+
     <!-- 
     // =========================================================================
     // SECTION: Toggle Control
