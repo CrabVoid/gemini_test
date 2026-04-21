@@ -5,7 +5,6 @@
 // Note: Currently used as a service-layer with static methods.
 // =========================================================================
 
-<?php
 // =========================================================================
 // SECTION: Customer Model
 // Purpose: Encapsulates business logic and data access for Customers.
