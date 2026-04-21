@@ -1,5 +1,9 @@
 <?php
-// Database.php
+// =========================================================================
+// SECTION: Database Connection (Singleton)
+// Purpose: Provides a single, shared PDO instance for the entire application.
+// =========================================================================
+
 class Database {
     private static $instance = null;
     private $pdo;
@@ -26,4 +30,8 @@ class Database {
         return $this->pdo;
     }
 }
+
+// -------------------------------------------------------------------------
+// END SECTION: Database Connection
+// -------------------------------------------------------------------------
 ?>
