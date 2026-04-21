@@ -4,8 +4,8 @@
 // Purpose: Handles data fetching and complex mapping of relational data.
 // =========================================================================
 
-require_once 'db/Database.php';
-require_once 'Models.php';
+require_once __DIR__ . '/db/Database.php';
+require_once __DIR__ . '/Models.php';
 
 class ClientRepository {
     private $pdo;

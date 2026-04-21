@@ -1,53 +1,188 @@
 # Tasker - Service-Oriented Client Management
 
-// =========================================================================
-// SECTION: Project Overview
-// Purpose: High-level summary of the application's purpose.
-// =========================================================================
+A lightweight PHP application designed to manage and visualize hierarchical client data with a clean, service-oriented architecture.
 
-Tasker is a lightweight PHP application designed to manage and visualize hierarchical client data. It features a clean, service-oriented architecture with a unique "Block Format" coding style for maximum readability and maintainability.
+---
 
-// -------------------------------------------------------------------------
-// END SECTION: Project Overview
-// -------------------------------------------------------------------------
+## Quick Start Guide
 
-// =========================================================================
-// SECTION: Features (Funkcionalitāte)
-// Purpose: List of key user-facing capabilities.
-// =========================================================================
+### Prerequisites
+- PHP 7.4+ with SQLite support
+- Windows (or modify the batch file for other OS)
 
-- **Client Overview:** View a complete list of customers including their IDs and contact details.
-- **Order Hierarchy:** Drill down into specific orders for each client.
-- **Detailed Itemization:** See exactly what was purchased, including quantities and unit prices.
-- **Dynamic Calculation:** Automatic calculation of order totals.
-- **Toggle View:** Flexible "Show/Hide Orders" functionality via GET parameters.
-- **Secure Configuration:** Environment-based settings (.env) to keep sensitive data safe.
+### Step 1: Start the Web Server
+Double-click `start-server.bat` in the project root directory. You should see:
+```
+Starting PHP Development Server...
+Navigate to: http://localhost:8000
+Press Ctrl+C to stop the server
+```
 
-// -------------------------------------------------------------------------
-// END SECTION: Features
-// -------------------------------------------------------------------------
+### Step 2: Initialize the Database (IMPORTANT - DO THIS FIRST!)
+Open your browser and navigate to:
+```
+http://localhost:8000/init-db.php
+```
 
-// =========================================================================
-// SECTION: Project Structure (Struktūra)
-// Purpose: Documentation of the file organization and responsibilities.
-// =========================================================================
+This will:
+- Create all database tables (clients, orders, products, order_items)
+- Populate with test data
+- Display a confirmation message
 
-```text
+**⚠️ CRITICAL: You MUST visit this URL first before accessing the main app!**
+
+### Step 3: View the Application
+After initialization, navigate to:
+```
+http://localhost:8000/
+```
+
+You should see a list of customers with their orders and purchase history.
+
+---
+
+## Features
+
+- **Client Overview:** View a complete list of customers with contact details
+- **Order Hierarchy:** Drill down into specific orders for each client
+- **Detailed Itemization:** See purchases with quantities and prices
+- **Dynamic Calculation:** Automatic calculation of order totals
+- **Toggle View:** Show/Hide Orders functionality via GET parameters
+  - `http://localhost:8000/?with-orders=none` - Hide orders
+  - `http://localhost:8000/?with-orders=full` - Show orders (default)
+- **Secure Configuration:** Environment-based settings (.env support)
+
+---
+
+## Project Structure
+
+```
 tasker/
-├── config.php          # Global configuration manager (.env loader)
-├── ClientRepository.php # Centralized data mapping logic
-├── Models.php          # Simple data entity classes (Client, Order, Item)
+├── config.php                    # Configuration manager (.env loader)
+├── ClientRepository.php          # Data fetching & mapping logic
+├── Models.php                    # Data entity classes (Client, Order, Item)
+├── start-server.bat              # Quick server startup script
 ├── db/
-│   ├── Database.php    # Singleton PDO connection wrapper
-│   ├── tasker.db       # SQLite database file
-│   └── init.sql        # Database schema definition
+│   ├── Database.php              # SQLite PDO connection (Singleton)
+│   ├── init.sql                  # Database schema
+│   └── tasker.db                 # SQLite database file
 ├── public/
-│   ├── index.php       # Main Entry Point (Controller)
-│   └── customers.php   # Specialized Customers Controller
+│   ├── index.php                 # Main entry point
+│   └── init-db.php               # Database initialization (RUN THIS FIRST!)
 ├── src/
 │   └── views/
-│       └── customers.php # Reusable HTML View component
-├── .env.example        # Template for environment variables
+│       └── customers.php         # Customer list HTML view
+├── README.md                      # This file
+└── .env.example                  # Environment variables template
+```
+
+---
+
+## Database Schema
+
+### Clients Table
+- `id` - Primary key
+- `firstname` - Client's first name
+- `lastname` - Client's last name
+- `email` - Unique email address
+- `points` - Loyalty points
+
+### Products Table
+- `id` - Primary key
+- `name` - Product name
+- `price` - Product price
+
+### Orders Table
+- `id` - Primary key
+- `client_id` - Foreign key to clients
+- `order_date` - When the order was placed
+- `status` - Order status (pending, shipped, completed)
+- `delivery_date` - Delivery date (optional)
+
+### Order Items Table
+- `id` - Primary key
+- `order_id` - Foreign key to orders
+- `product_id` - Foreign key to products
+- `quantity` - Number of units
+- `price_at_purchase` - Price paid at time of order
+
+---
+
+## Setup for New Users (Step-by-Step)
+
+1. **Extract/Clone the project** to your desired location
+2. **Run `start-server.bat`** - This starts the PHP development server on port 8000
+3. **Open browser to `http://localhost:8000/init-db.php`** - This initializes the database with tables and test data
+4. **Open browser to `http://localhost:8000/`** - View the customer list
+5. **To stop the server**, press `Ctrl+C` in the terminal window
+
+---
+
+## Test Data Included
+
+The initialization script automatically creates:
+- **4 Customers:** John Doe, Jane Smith, Bob Johnson, Alice Williams
+- **5 Products:** Laptop, Mouse, Keyboard, Monitor, Headphones
+- **5 Orders** across multiple customers
+- **7 Order Items** distributed across the orders
+
+---
+
+## Configuration
+
+Create a `.env` file in the project root to override defaults:
+
+```
+DB_FILE=/path/to/database.db
+APP_ENV=development
+```
+
+If no `.env` file exists, defaults are used (database at `db/tasker.db`).
+
+---
+
+## Architecture
+
+### Service-Oriented Design
+- **ClientRepository** - Handles all data queries and object mapping
+- **Database** - Singleton pattern ensures one connection
+- **Models** - Simple data entities (Client, Order, OrderItem)
+- **Views** - Separated HTML presentation logic
+
+### Block Format Code Style
+All PHP files use a "Block Format" style with clear section markers:
+```php
+// =========================================================================
+// SECTION: Section Name
+// Purpose: What this section does
+// =========================================================================
+```
+
+This improves readability and maintainability for large code blocks.
+
+---
+
+## Troubleshooting
+
+### "Cannot find php command"
+- Ensure PHP is installed and added to your system PATH
+- Or install PHP: https://www.php.net/downloads
+
+### "SQLSTATE[HY000]: no such table"
+- You must run `http://localhost:8000/init-db.php` first
+- This creates and populates all required tables
+
+### Server won't start
+- Ensure port 8000 is not in use
+- Close any other applications using that port
+- Or modify `start-server.bat` to use a different port: `php -S localhost:9000 -t public`
+
+---
+
+## License
+
+This project is part of VIBE-CODING Tasker suite.
+
 └── .gitignore          # Prevents sensitive files from being tracked
 ```
 

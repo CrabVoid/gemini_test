@@ -1,4 +1,7 @@
 <?php
+ini_set('display_errors', 1);
+error_reporting(E_ALL);
+
 // =========================================================================
 // SECTION: Logic & Data Initialization
 // Purpose: Orchestrates the data fetching and delegates to the view.
