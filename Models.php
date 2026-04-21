@@ -33,6 +33,9 @@ class Order {
     public $status;
     public $date;
     public $items = [];
+    public $client_id;
+    public $client_name;
+    public $client_email;
 
     public function __construct($id, $status, $date) {
         $this->id = $id;
