@@ -48,8 +48,8 @@ $statusFilter = isset($_GET['status']) ? htmlspecialchars($_GET['status']) : nul
 $orders = OrderModel::all($statusFilter);
 
 // Fetch additional data for the form
-$clients = Customer::all();
-$products = Product::all();
+$clients = CustomerModel::all();
+$products = ProductModel::all();
 
 // Delegate to the view
 require_once __DIR__ . '/../src/views/orders.php';

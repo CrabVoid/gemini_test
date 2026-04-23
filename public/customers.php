@@ -17,7 +17,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
     $points = (int)($_POST['points'] ?? 0);
 
     if (!empty($firstname) && !empty($lastname) && !empty($email)) {
-        Customer::create($firstname, $lastname, $email, $points);
+        CustomerModel::create($firstname, $lastname, $email, $points);
         // Redirect to avoid form resubmission
         header('Location: customers.php?success=customer_created');
         exit;
@@ -28,8 +28,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
 // Check if we should show the full hierarchy
 $showOrders = isset($_GET['with-orders']) && $_GET['with-orders'] === 'full';
 
-// Fetch data using the static Model function
-$clients = Customer::all();
+// Fetch customers data
+$clients = CustomerModel::all();
 
 // Delegate to the view
 require_once __DIR__ . '/../src/views/customers.php';

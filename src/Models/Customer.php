@@ -8,12 +8,12 @@
 require_once __DIR__ . '/../../db/Database.php';
 require_once __DIR__ . '/../../Models.php';
 
-class Customer {
+class CustomerModel {
 
     /**
      * Fetches all customers with their full hierarchical order data.
      * 
-     * @return array List of Client objects with nested Orders and Items.
+     * @return Client[] List of Client objects with nested Orders and Items.
      */
     public static function all() {
         $pdo = Database::getInstance()->getConnection();

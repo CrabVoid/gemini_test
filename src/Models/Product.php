@@ -5,31 +5,43 @@
 // =========================================================================
 
 require_once __DIR__ . '/../../db/Database.php';
+require_once __DIR__ . '/../../Models.php';
 
-class Product {
+class ProductModel {
 
     /**
      * Fetches all products from the database.
      * 
-     * @return array List of products.
+     * @return Product[] List of Product objects.
      */
     public static function all() {
         $pdo = Database::getInstance()->getConnection();
         $stmt = $pdo->query("SELECT * FROM products ORDER BY name ASC");
-        return $stmt->fetchAll();
+        $rawData = $stmt->fetchAll();
+        
+        $products = [];
+        foreach ($rawData as $row) {
+            $products[] = new Product($row['id'], $row['name'], $row['price']);
+        }
+        return $products;
     }
 
     /**
      * Finds a single product by ID.
      * 
      * @param int $id The product ID.
-     * @return array|false The product data or false if not found.
+     * @return Product|false The Product object or false if not found.
      */
     public static function find($id) {
         $pdo = Database::getInstance()->getConnection();
         $stmt = $pdo->prepare("SELECT * FROM products WHERE id = :id");
         $stmt->execute([':id' => $id]);
-        return $stmt->fetch();
+        $row = $stmt->fetch();
+        
+        if ($row) {
+            return new Product($row['id'], $row['name'], $row['price']);
+        }
+        return false;
     }
 }
 

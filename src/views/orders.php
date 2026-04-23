@@ -49,7 +49,10 @@
     <?php require_once __DIR__ . '/../includes/navigation.php'; ?>
 
     <div class="container">
-        <h2 class="page-title">Orders Management</h2>
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <h2 class="page-title" style="margin-bottom: 0; border-bottom: none;">Orders Management</h2>
+            <button id="toggleFormBtn" class="btn-submit" style="background: #27ae60;">+ Create New Order</button>
+        </div>
 
         <!-- 
         // =========================================================================
@@ -75,7 +78,7 @@
         // Purpose: Form to place a new order for a customer.
         // =========================================================================
         -->
-        <div class="form-card">
+        <div id="orderForm" class="form-card" style="display: <?= isset($error) ? 'block' : 'none' ?>;">
             <h3 style="margin-top: 0; color: #3498db;">Place New Order</h3>
             <form method="POST" action="orders.php">
                 <input type="hidden" name="action" value="create_order">
@@ -96,7 +99,7 @@
                         <select name="product_id" id="product_id" required>
                             <option value="">-- Select Product --</option>
                             <?php foreach ($products as $p): ?>
-                                <option value="<?= $p['id'] ?>"><?= htmlspecialchars($p['name']) ?> - €<?= number_format($p['price'], 2) ?></option>
+                                <option value="<?= $p->id ?>"><?= htmlspecialchars($p->name) ?> - €<?= number_format($p->price, 2) ?></option>
                             <?php endforeach; ?>
                         </select>
                     </div>
@@ -115,9 +118,24 @@
                     </select>
                 </div>
 
-                <button type="submit" class="btn-submit">Place Order</button>
+                <div style="display: flex; gap: 10px;">
+                    <button type="submit" class="btn-submit">Place Order</button>
+                    <button type="button" onclick="document.getElementById('orderForm').style.display='none'" class="btn-submit" style="background: #95a5a6;">Cancel</button>
+                </div>
             </form>
         </div>
+
+        <script>
+            document.getElementById('toggleFormBtn').addEventListener('click', function() {
+                var form = document.getElementById('orderForm');
+                if (form.style.display === 'none') {
+                    form.style.display = 'block';
+                    form.scrollIntoView({ behavior: 'smooth' });
+                } else {
+                    form.style.display = 'none';
+                }
+            });
+        </script>
         <!-- -------------------------------------------------------------------------
         // END SECTION: Order Creation Form
         // -------------------------------------------------------------------------
