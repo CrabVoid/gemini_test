@@ -24,7 +24,8 @@ CREATE TABLE IF NOT EXISTS products (
     name TEXT NOT NULL,
     price REAL NOT NULL, -- Sell Price (Pārdošanas cena)
     buy_price REAL DEFAULT 0, -- Buy Price (Iepirkuma cena)
-    weight REAL DEFAULT 0 -- Weight in kg (Svars kg)
+    weight REAL DEFAULT 0, -- Weight in kg (Svars kg)
+    source TEXT -- Origin/Supplier description
 );
 
 -- Orders (Pasūtījumi)

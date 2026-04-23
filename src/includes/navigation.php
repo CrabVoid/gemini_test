@@ -13,6 +13,7 @@ function getCurrentPage() {
     if ($script === 'customers.php') return 'customers';
     if ($script === 'orders.php') return 'orders';
     if ($script === 'delivery.php') return 'delivery';
+    if ($script === 'products.php') return 'products';
     return '';
 }
 
@@ -41,6 +42,11 @@ $currentPage = getCurrentPage();
                 👥 Klienti
             </a>
             
+            <a href="/products.php" style="padding: 15px 20px; color: white; text-decoration: none; transition: background 0.2s; background: <?php echo ($currentPage === 'products') ? '#3498db' : 'transparent'; ?>;"
+               onmouseover="this.style.background='#3498db'" onmouseout="this.style.background='<?php echo ($currentPage === 'products') ? '#3498db' : 'transparent'; ?>'">
+                🏷️ Preces
+            </a>
+
             <a href="/orders.php" style="padding: 15px 20px; color: white; text-decoration: none; transition: background 0.2s; background: <?php echo ($currentPage === 'orders') ? '#3498db' : 'transparent'; ?>;"
                onmouseover="this.style.background='#3498db'" onmouseout="this.style.background='<?php echo ($currentPage === 'orders') ? '#3498db' : 'transparent'; ?>'">
                 📦 Pasūtījumi

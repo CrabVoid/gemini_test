@@ -7,12 +7,17 @@ try {
     $pdo = new PDO("sqlite:" . $dbFile);
     $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
     
+    // Pārliecināmies, ka tabulas tiek pārizveidotas (Drop & Create)
+    $pdo->exec("PRAGMA foreign_keys = OFF;");
+    $pdo->exec("DROP TABLE IF EXISTS order_items;");
+    $pdo->exec("DROP TABLE IF EXISTS orders;");
+    $pdo->exec("DROP TABLE IF EXISTS products;");
+    $pdo->exec("DROP TABLE IF EXISTS delivery_companies;");
+    $pdo->exec("DROP TABLE IF EXISTS clients;");
+    $pdo->exec("PRAGMA foreign_keys = ON;");
+
     $sql = file_get_contents(__DIR__ . '/db/init.sql');
     $pdo->exec($sql);
-    
-    $pdo->exec("PRAGMA foreign_keys = OFF;");
-    $pdo->exec("DELETE FROM order_items; DELETE FROM orders; DELETE FROM products; DELETE FROM delivery_companies; DELETE FROM clients;");
-    $pdo->exec("PRAGMA foreign_keys = ON;");
 
     // 1. Klienti
     $pdo->exec("INSERT INTO clients (id, firstname, lastname, email, points) VALUES 
@@ -30,17 +35,17 @@ try {
         (3, 'Venipak', 'Ekonomiskā piegāde', 2.00, 0.15)");
 
     // 3. Produkti
-    $pdo->exec("INSERT INTO products (id, name, price, buy_price, weight) VALUES 
-        (1, 'Kafijas aparāts', 120.00, 75.00, 4.5),
-        (2, 'Tējkanna', 25.00, 12.00, 1.2),
-        (3, 'Maizes tosters', 35.00, 18.00, 2.0),
-        (4, 'Mikseris', 45.00, 25.00, 1.5),
-        (5, 'Gludeklis', 60.00, 35.00, 1.8),
-        (6, 'Blenderis', 55.00, 30.00, 2.2),
-        (7, 'Virtuves svari', 15.00, 7.50, 0.5),
-        (8, 'Putekļu sūcējs', 180.00, 110.00, 5.5),
-        (9, 'Fēns', 30.00, 15.00, 0.8),
-        (10, 'Elektriskā zobu birste', 45.00, 22.00, 0.3)");
+    $pdo->exec("INSERT INTO products (id, name, price, buy_price, weight, source) VALUES 
+        (1, 'Kafijas aparāts', 120.00, 75.00, 4.5, 'Vācija, Philips rūpnīca'),
+        (2, 'Tējkanna', 25.00, 12.00, 1.2, 'Polija, vietējais vairumtirgotājs'),
+        (3, 'Maizes tosters', 35.00, 18.00, 2.0, 'Ķīna, importēts caur Dāniju'),
+        (4, 'Mikseris', 45.00, 25.00, 1.5, 'Polija, Bosch pārstāvis'),
+        (5, 'Gludeklis', 60.00, 35.00, 1.8, 'Vācija, Tefal izplatītājs'),
+        (6, 'Blenderis', 55.00, 30.00, 2.2, 'Ķīna, OEM pasūtījums'),
+        (7, 'Virtuves svari', 15.00, 7.50, 0.5, 'Lietuva, Maxima noliktava'),
+        (8, 'Putekļu sūcējs', 180.00, 110.00, 5.5, 'Vācija, Miele noliktava'),
+        (9, 'Fēns', 30.00, 15.00, 0.8, 'Francija, vietējais salons'),
+        (10, 'Elektriskā zobu birste', 45.00, 22.00, 0.3, 'Lielbritānija, Amazon outlet')");
 
     // 4. Pasūtījumi (Manuāli aprēķināti piemēri)
     

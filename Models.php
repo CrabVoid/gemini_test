@@ -55,6 +55,7 @@ class Product {
     public $price;      // Sell Price
     public $buy_price;  // Buy Price
     public $weight;     // Weight in kg
+    public $source;     // Origin/Description
 }
 
 /**

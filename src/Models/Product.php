@@ -10,29 +10,66 @@ class ProductModel {
 
     /**
      * SUB-SECTION: Fetch All Products
-     * Purpose: Retrieves a list of all products for order creation.
      */
     public static function all() {
         $db = Database::getConnection();
-        
-        // Atgriežam sarakstu ar produktiem, sakārtotiem pēc nosaukuma
         $stmt = $db->query("SELECT * FROM products ORDER BY name ASC");
-        
-        // Hydration: Katra rinda kļūst par 'Product' objektu
         return $stmt->fetchAll(PDO::FETCH_CLASS, 'Product');
     }
 
     /**
      * SUB-SECTION: Find Product by ID
-     * Purpose: Get a single product's details (like its current price).
      */
     public static function find($id) {
         $db = Database::getConnection();
         $stmt = $db->prepare("SELECT * FROM products WHERE id = :id");
         $stmt->execute([':id' => $id]);
-        
-        // Atgriežam vienu objektu
         return $stmt->fetchObject('Product');
+    }
+
+    /**
+     * SUB-SECTION: Create New Product
+     */
+    public static function create($data) {
+        $db = Database::getConnection();
+        $sql = "INSERT INTO products (name, price, buy_price, weight, source) 
+                VALUES (:name, :price, :buy, :weight, :source)";
+        $stmt = $db->prepare($sql);
+        return $stmt->execute([
+            ':name'   => $data['name'],
+            ':price'  => $data['price'],
+            ':buy'    => $data['buy_price'],
+            ':weight' => $data['weight'],
+            ':source' => $data['source']
+        ]);
+    }
+
+    /**
+     * SUB-SECTION: Update Product
+     */
+    public static function update($id, $data) {
+        $db = Database::getConnection();
+        $sql = "UPDATE products 
+                SET name = :name, price = :price, buy_price = :buy, weight = :weight, source = :source 
+                WHERE id = :id";
+        $stmt = $db->prepare($sql);
+        return $stmt->execute([
+            ':id'     => $id,
+            ':name'   => $data['name'],
+            ':price'  => $data['price'],
+            ':buy'    => $data['buy_price'],
+            ':weight' => $data['weight'],
+            ':source' => $data['source']
+        ]);
+    }
+
+    /**
+     * SUB-SECTION: Delete Product
+     */
+    public static function delete($id) {
+        $db = Database::getConnection();
+        $stmt = $db->prepare("DELETE FROM products WHERE id = :id");
+        return $stmt->execute([':id' => $id]);
     }
 }
 // =========================================================================
