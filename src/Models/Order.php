@@ -27,7 +27,28 @@ class OrderModel {
                 ORDER BY o.id DESC";
                 
         $stmt = $db->query($sql);
-        return $stmt->fetchAll(PDO::FETCH_CLASS, 'Order');
+        $orders = $stmt->fetchAll(PDO::FETCH_CLASS, 'Order');
+
+        // Pievienojam preces katram pasūtījumam (N+1 query avoided for simplicity in this small app)
+        foreach ($orders as $order) {
+            $order->items = self::getItems($order->id);
+        }
+
+        return $orders;
+    }
+
+    /**
+     * SUB-SECTION: Get Items for Order
+     */
+    public static function getItems($orderId) {
+        $db = Database::getConnection();
+        $sql = "SELECT oi.*, p.name as product_name, p.weight 
+                FROM order_items oi
+                JOIN products p ON oi.product_id = p.id
+                WHERE oi.order_id = :oid";
+        $stmt = $db->prepare($sql);
+        $stmt->execute([':oid' => $orderId]);
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
     /**
@@ -39,9 +60,8 @@ class OrderModel {
 
         try {
             $dc = DeliveryCompanyModel::find($data['delivery_company_id']);
-            $taxRate = 0.21; // 21% PVN
+            $taxRate = 0.21; 
             
-            // 1. Aprēķinām svaru un kopējās cenas (Weight & Prices)
             $totalWeight = 0;
             $totalSell = 0;
             $totalBuy = 0;
@@ -65,14 +85,10 @@ class OrderModel {
                 ];
             }
 
-            // 2. Aprēķinām piegādes izmaksas (Shipping Cost)
             $shipping = $dc ? ($dc->base_cost + ($dc->cost_per_kg * $totalWeight)) : 0;
-            
-            // 3. Aprēķinām nodokli un peļņu (Tax & Profit)
             $taxAmount = $totalSell * $taxRate;
             $profit = ($totalSell - $totalBuy) - $taxAmount - $shipping;
 
-            // 4. Saglabājam pasūtījumu
             $stmt = $db->prepare("INSERT INTO orders (client_id, delivery_company_id, status, tax_rate, shipping_cost, total_profit, order_date) 
                                  VALUES (:cid, :dcid, 'pending', :tax, :ship, :profit, datetime('now'))");
             $stmt->execute([
@@ -85,7 +101,6 @@ class OrderModel {
             
             $orderId = $db->lastInsertId();
 
-            // 5. Saglabājam preces ar vēsturiskajām cenām
             foreach ($processedItems as $pi) {
                 $itemStmt = $db->prepare("INSERT INTO order_items (order_id, product_id, quantity, price_at_purchase, buy_price_at_purchase) 
                                         VALUES (:oid, :pid, :qty, :price, :buy)");

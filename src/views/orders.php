@@ -23,10 +23,16 @@
         .btn-action { padding: 5px 10px; font-size: 0.85em; }
 
         table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-        th, td { text-align: left; padding: 12px; border-bottom: 1px solid #eee; }
+        th, td { text-align: left; padding: 12px; border-bottom: 1px solid #eee; vertical-align: top; }
         th { background: #f9f9f9; color: #2c3e50; }
         
         .status-badge { padding: 3px 8px; border-radius: 12px; font-size: 0.85em; font-weight: bold; color: white; }
+        
+        .item-table { width: 100%; font-size: 0.85em; border: 1px solid #eee; margin-top: 10px; border-collapse: collapse; }
+        .item-table th { background: #f8f9fa; padding: 6px; border-bottom: 2px solid #dee2e6; text-align: left; color: #495057; }
+        .item-table td { padding: 6px; border-bottom: 1px solid #eee; color: #212529; }
+        .text-right { text-align: right !important; }
+        .text-muted { color: #6c757d; font-size: 0.9em; }
     </style>
 </head>
 <body>
@@ -86,11 +92,11 @@
             <table>
                 <thead>
                     <tr>
-                        <th>ID</th>
-                        <th>Klients</th>
+                        <th>Pasūtījums</th>
+                        <th>Klients & Preces</th>
                         <th>Piegāde</th>
                         <th>Summa</th>
-                        <th>Neto Peļņa</th>
+                        <th>Peļņa</th>
                         <th>Statuss</th>
                         <th>Darbības</th>
                     </tr>
@@ -98,8 +104,32 @@
                 <tbody>
                     <?php foreach ($orders as $o): ?>
                     <tr>
-                        <td>#<?= $o->id ?></td>
-                        <td><?= htmlspecialchars($o->client_name) ?></td>
+                        <td><strong>#<?= $o->id ?></strong><br><small><?= $o->order_date ?></small></td>
+                        <td>
+                            <strong><?= htmlspecialchars($o->client_name) ?></strong>
+                            <table class="item-table">
+                                <thead>
+                                    <tr>
+                                        <th>Prece</th>
+                                        <th class="text-right">Daudz.</th>
+                                        <th class="text-right">Cena</th>
+                                        <th class="text-right">Kopā</th>
+                                        <th class="text-right">Svars</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <?php foreach ($o->items as $item): ?>
+                                        <tr>
+                                            <td><?= htmlspecialchars($item['product_name']) ?></td>
+                                            <td class="text-right"><?= $item['quantity'] ?></td>
+                                            <td class="text-right"><?= number_format($item['price_at_purchase'], 2) ?> €</td>
+                                            <td class="text-right"><strong><?= number_format($item['price_at_purchase'] * $item['quantity'], 2) ?> €</strong></td>
+                                            <td class="text-right text-muted"><?= number_format($item['weight'] * $item['quantity'], 2) ?> kg</td>
+                                        </tr>
+                                    <?php endforeach; ?>
+                                </tbody>
+                            </table>
+                        </td>
                         <td><?= htmlspecialchars($o->delivery_name) ?><br><small>+<?= number_format($o->shipping_cost, 2) ?> €</small></td>
                         <td><strong><?= number_format($o->total_amount, 2) ?> €</strong></td>
                         <td style="color: <?= $o->total_profit >= 0 ? '#27ae60' : '#e74c3c' ?>; font-weight: bold;">
