@@ -64,6 +64,14 @@
             <div class="alert alert-success">✓ New order placed successfully!</div>
         <?php endif; ?>
         
+        <?php if (isset($_GET['success']) && $_GET['success'] === 'order_updated'): ?>
+            <div class="alert alert-success">✓ Order updated successfully!</div>
+        <?php endif; ?>
+
+        <?php if (isset($_GET['success']) && $_GET['success'] === 'order_deleted'): ?>
+            <div class="alert alert-success">✓ Order deleted successfully!</div>
+        <?php endif; ?>
+        
         <?php if (isset($error)): ?>
             <div class="alert alert-error">⚠ <?= htmlspecialchars($error) ?></div>
         <?php endif; ?>
@@ -135,6 +143,11 @@
                     form.style.display = 'none';
                 }
             });
+
+            function toggleEditForm(orderId) {
+                var form = document.getElementById('editForm-' + orderId);
+                form.style.display = form.style.display === 'none' ? 'block' : 'none';
+            }
         </script>
         <!-- -------------------------------------------------------------------------
         // END SECTION: Order Creation Form
@@ -215,6 +228,51 @@
 
                     <div class="order-meta">
                         <strong>Order Date:</strong> <?php echo htmlspecialchars($order->date); ?>
+                    </div>
+
+                    <!-- Actions -->
+                    <div style="margin-top: 15px; display: flex; gap: 10px; border-top: 1px solid #eee; padding-top: 10px;">
+                        <button onclick="toggleEditForm(<?= $order->id ?>)" class="btn-submit" style="padding: 5px 10px; font-size: 0.85em;">Edit Status/Customer</button>
+                        
+                        <form method="POST" action="orders.php" onsubmit="return confirm('Are you sure you want to delete this order?')">
+                            <input type="hidden" name="action" value="delete_order">
+                            <input type="hidden" name="order_id" value="<?= $order->id ?>">
+                            <button type="submit" class="btn-submit" style="background: #e74c3c; padding: 5px 10px; font-size: 0.85em;">Delete</button>
+                        </form>
+                    </div>
+
+                    <!-- Inline Edit Form (Hidden by default) -->
+                    <div id="editForm-<?= $order->id ?>" style="display: none; margin-top: 15px; padding: 15px; border: 1px solid #3498db; border-radius: 4px; background: #f0f7fd;">
+                        <h4 style="margin-top: 0; color: #3498db;">Edit Order #<?= $order->id ?></h4>
+                        <form method="POST" action="orders.php">
+                            <input type="hidden" name="action" value="update_order">
+                            <input type="hidden" name="order_id" value="<?= $order->id ?>">
+                            
+                            <div class="form-group">
+                                <label>Change Customer</label>
+                                <select name="client_id" required>
+                                    <?php foreach ($clients as $c): ?>
+                                        <option value="<?= $c->id ?>" <?= $c->id == $order->client_id ? 'selected' : '' ?>>
+                                            <?= htmlspecialchars($c->name) ?>
+                                        </option>
+                                    <?php endforeach; ?>
+                                </select>
+                            </div>
+
+                            <div class="form-group">
+                                <label>Update Status</label>
+                                <select name="status">
+                                    <option value="pending" <?= $order->status === 'pending' ? 'selected' : '' ?>>Pending</option>
+                                    <option value="shipped" <?= $order->status === 'shipped' ? 'selected' : '' ?>>Shipped</option>
+                                    <option value="completed" <?= $order->status === 'completed' ? 'selected' : '' ?>>Completed</option>
+                                </select>
+                            </div>
+
+                            <div style="display: flex; gap: 10px;">
+                                <button type="submit" class="btn-submit" style="padding: 6px 12px; font-size: 0.9em;">Save Changes</button>
+                                <button type="button" onclick="toggleEditForm(<?= $order->id ?>)" class="btn-submit" style="background: #95a5a6; padding: 6px 12px; font-size: 0.9em;">Cancel</button>
+                            </div>
+                        </form>
                     </div>
 
                     <?php if (!empty($order->items)): ?>

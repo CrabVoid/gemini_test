@@ -39,6 +39,40 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
         $error = "All fields are required.";
     }
 }
+
+// -------------------------------------------------------------------------
+// SUB-SECTION: Handle Update Request
+// -------------------------------------------------------------------------
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'update_order') {
+    $order_id = (int)($_POST['order_id'] ?? 0);
+    $client_id = (int)($_POST['client_id'] ?? 0);
+    $status = $_POST['status'] ?? 'pending';
+    
+    if ($order_id > 0 && $client_id > 0) {
+        if (OrderModel::update($order_id, $client_id, $status)) {
+            header('Location: orders.php?success=order_updated');
+            exit;
+        } else {
+            $error = "Failed to update order.";
+        }
+    }
+}
+
+// -------------------------------------------------------------------------
+// SUB-SECTION: Handle Delete Request
+// -------------------------------------------------------------------------
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'delete_order') {
+    $order_id = (int)($_POST['order_id'] ?? 0);
+    
+    if ($order_id > 0) {
+        if (OrderModel::delete($order_id)) {
+            header('Location: orders.php?success=order_deleted');
+            exit;
+        } else {
+            $error = "Failed to delete order.";
+        }
+    }
+}
 // -------------------------------------------------------------------------
 
 // Get status filter from GET parameter (if provided)

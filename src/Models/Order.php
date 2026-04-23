@@ -153,6 +153,114 @@ class OrderModel {
             return false;
         }
     }
+
+    /**
+     * Finds a single order by ID.
+     */
+    public static function find($id) {
+        $pdo = Database::getInstance()->getConnection();
+        $query = "
+            SELECT o.*, c.firstname, c.lastname, c.email 
+            FROM orders o 
+            JOIN clients c ON o.client_id = c.id 
+            WHERE o.id = :id
+        ";
+        $stmt = $pdo->prepare($query);
+        $stmt->execute([':id' => $id]);
+        $row = $stmt->fetch();
+
+        if (!$row) return false;
+
+        $order = new Order($row['id'], $row['status'], $row['order_date']);
+        $order->client_id = $row['client_id'];
+        $order->client_name = $row['firstname'] . ' ' . $row['lastname'];
+        $order->client_email = $row['email'];
+
+        // Fetch items
+        $itemQuery = "
+            SELECT oi.*, p.name as product_name 
+            FROM order_items oi 
+            JOIN products p ON oi.product_id = p.id 
+            WHERE oi.order_id = :oid
+        ";
+        $itemStmt = $pdo->prepare($itemQuery);
+        $itemStmt->execute([':oid' => $id]);
+        
+        foreach ($itemStmt->fetchAll() as $itemRow) {
+            $order->addItem(new OrderItem(
+                $itemRow['id'],
+                $itemRow['product_name'],
+                $itemRow['quantity'],
+                $itemRow['price_at_purchase']
+            ));
+        }
+
+        return $order;
+    }
+
+    /**
+     * Updates an existing order.
+     */
+    public static function update($id, $client_id, $status, $items = []) {
+        $pdo = Database::getInstance()->getConnection();
+
+        try {
+            $pdo->beginTransaction();
+
+            // 1. Update main order
+            $query = "UPDATE orders SET client_id = :client_id, status = :status WHERE id = :id";
+            $stmt = $pdo->prepare($query);
+            $stmt->execute([
+                ':client_id' => $client_id,
+                ':status' => $status,
+                ':id' => $id
+            ]);
+
+            // 2. Update items (simplest way: delete and re-insert if items provided)
+            if (!empty($items)) {
+                $pdo->prepare("DELETE FROM order_items WHERE order_id = :id")->execute([':id' => $id]);
+                
+                $itemStmt = $pdo->prepare("INSERT INTO order_items (order_id, product_id, quantity, price_at_purchase) 
+                                          VALUES (:order_id, :product_id, :quantity, :price_at_purchase)");
+                
+                foreach ($items as $item) {
+                    $productStmt = $pdo->prepare("SELECT price FROM products WHERE id = :pid");
+                    $productStmt->execute([':pid' => $item['product_id']]);
+                    $productPrice = $productStmt->fetchColumn();
+
+                    $itemStmt->execute([
+                        ':order_id' => $id,
+                        ':product_id' => $item['product_id'],
+                        ':quantity' => $item['quantity'],
+                        ':price_at_purchase' => $productPrice
+                    ]);
+                }
+            }
+
+            $pdo->commit();
+            return true;
+        } catch (Exception $e) {
+            $pdo->rollBack();
+            return false;
+        }
+    }
+
+    /**
+     * Deletes an order and its items.
+     */
+    public static function delete($id) {
+        $pdo = Database::getInstance()->getConnection();
+        try {
+            $pdo->beginTransaction();
+            $pdo->prepare("DELETE FROM order_items WHERE order_id = :id")->execute([':id' => $id]);
+            $pdo->prepare("DELETE FROM orders WHERE id = :id")->execute([':id' => $id]);
+            $pdo->commit();
+            return true;
+        } catch (Exception $e) {
+            $pdo->rollBack();
+            return false;
+        }
+    }
 }
 
 // -------------------------------------------------------------------------
