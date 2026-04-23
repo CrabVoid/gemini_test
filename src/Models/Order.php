@@ -95,6 +95,64 @@ class OrderModel {
         
         return $orders;
     }
+
+    /**
+     * Creates a new order with items in the database.
+     * Uses a transaction to ensure both order and items are saved.
+     * 
+     * @param int $client_id The customer ID
+     * @param string $status The order status
+     * @param array $items List of items (product_id, quantity)
+     * @return int|false The ID of the newly created order or false on failure
+     */
+    public static function create($client_id, $status, $items) {
+        $pdo = Database::getInstance()->getConnection();
+
+        try {
+            $pdo->beginTransaction();
+
+            // 1. Insert the main order
+            $query = "INSERT INTO orders (client_id, status, order_date) VALUES (:client_id, :status, datetime('now'))";
+            $stmt = $pdo->prepare($query);
+            $stmt->execute([
+                ':client_id' => $client_id,
+                ':status' => $status
+            ]);
+
+            $orderId = $pdo->lastInsertId();
+
+            // 2. Insert each item
+            $itemQuery = "INSERT INTO order_items (order_id, product_id, quantity, price_at_purchase) 
+                          VALUES (:order_id, :product_id, :quantity, :price_at_purchase)";
+            $itemStmt = $pdo->prepare($itemQuery);
+
+            foreach ($items as $item) {
+                // Fetch current product price
+                $productStmt = $pdo->prepare("SELECT price FROM products WHERE id = :pid");
+                $productStmt->execute([':pid' => $item['product_id']]);
+                $product = $productStmt->fetch();
+
+                if (!$product) {
+                    throw new Exception("Product ID " . $item['product_id'] . " not found.");
+                }
+
+                $itemStmt->execute([
+                    ':order_id' => $orderId,
+                    ':product_id' => $item['product_id'],
+                    ':quantity' => $item['quantity'],
+                    ':price_at_purchase' => $product['price']
+                ]);
+            }
+
+            $pdo->commit();
+            return $orderId;
+
+        } catch (Exception $e) {
+            $pdo->rollBack();
+            error_log("Order creation failed: " . $e->getMessage());
+            return false;
+        }
+    }
 }
 
 // -------------------------------------------------------------------------

@@ -24,6 +24,16 @@
         .btn-toggle:hover { background: #2980b9; }
         .btn-hide { background: #95a5a6; }
         .btn-hide:hover { background: #7f8c8d; }
+        
+        /* Form Styling */
+        .form-card { background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px #ccc; margin-bottom: 30px; border-top: 4px solid #27ae60; }
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; margin-bottom: 5px; font-weight: bold; color: #34495e; }
+        .form-group input { width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box; }
+        .btn-submit { background: #27ae60; color: #fff; border: none; padding: 10px 15px; border-radius: 4px; cursor: pointer; font-weight: bold; }
+        .btn-submit:hover { background: #219150; }
+        .alert { padding: 10px; border-radius: 4px; margin-bottom: 20px; font-weight: bold; }
+        .alert-success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
     </style>
     <!-- -------------------------------------------------------------------------
     // END SECTION: Styling
@@ -35,6 +45,56 @@
 
     <!-- Page Title -->
     <h2 style="color: #2c3e50; margin-bottom: 20px; border-bottom: 2px solid #3498db; padding-bottom: 10px;">Customers Directory</h2>
+
+    <!-- 
+    // =========================================================================
+    // SECTION: Notifications
+    // Purpose: Displays success or error messages.
+    // =========================================================================
+    -->
+    <?php if (isset($_GET['success']) && $_GET['success'] === 'customer_created'): ?>
+        <div class="alert alert-success">✓ New customer added successfully!</div>
+    <?php endif; ?>
+    <!-- -------------------------------------------------------------------------
+    // END SECTION: Notifications
+    // -------------------------------------------------------------------------
+    -->
+
+    <!-- 
+    // =========================================================================
+    // SECTION: Customer Creation Form
+    // Purpose: Form to add a new customer to the database.
+    // =========================================================================
+    -->
+    <div class="form-card">
+        <h3 style="margin-top: 0; color: #27ae60;">Add New Customer</h3>
+        <form method="POST" action="customers.php">
+            <input type="hidden" name="action" value="create_customer">
+            <div style="display: flex; gap: 15px;">
+                <div class="form-group" style="flex: 1;">
+                    <label for="firstname">First Name</label>
+                    <input type="text" id="firstname" name="firstname" required placeholder="e.g. John">
+                </div>
+                <div class="form-group" style="flex: 1;">
+                    <label for="lastname">Last Name</label>
+                    <input type="text" id="lastname" name="lastname" required placeholder="e.g. Doe">
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="email">Email Address</label>
+                <input type="email" id="email" name="email" required placeholder="e.g. john@example.com">
+            </div>
+            <div class="form-group">
+                <label for="points">Initial Points</label>
+                <input type="number" id="points" name="points" value="0" min="0">
+            </div>
+            <button type="submit" class="btn-submit">Register Customer</button>
+        </form>
+    </div>
+    <!-- -------------------------------------------------------------------------
+    // END SECTION: Customer Creation Form
+    // -------------------------------------------------------------------------
+    -->
 
     <!-- 
     // =========================================================================

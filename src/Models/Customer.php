@@ -5,12 +5,6 @@
 // Note: Currently used as a service-layer with static methods.
 // =========================================================================
 
-// =========================================================================
-// SECTION: Customer Model
-// Purpose: Encapsulates business logic and data access for Customers.
-// Note: Currently used as a service-layer with static methods.
-// =========================================================================
-
 require_once __DIR__ . '/../../db/Database.php';
 require_once __DIR__ . '/../../Models.php';
 
@@ -83,6 +77,30 @@ class Customer {
             }
         }
         return $clients;
+    }
+
+    /**
+     * Creates a new customer in the database.
+     * 
+     * @param string $firstname Customer's first name
+     * @param string $lastname Customer's last name
+     * @param string $email Customer's email
+     * @param int $points Initial points for the customer
+     * @return int The ID of the newly created customer
+     */
+    public static function create($firstname, $lastname, $email, $points = 0) {
+        $pdo = Database::getInstance()->getConnection();
+
+        $query = "INSERT INTO clients (firstname, lastname, email, points) VALUES (:firstname, :lastname, :email, :points)";
+        $stmt = $pdo->prepare($query);
+        $stmt->execute([
+            ':firstname' => $firstname,
+            ':lastname' => $lastname,
+            ':email' => $email,
+            ':points' => $points
+        ]);
+
+        return $pdo->lastInsertId();
     }
 }
 

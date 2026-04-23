@@ -32,116 +32,203 @@
         .empty-message { text-align: center; color: #7f8c8d; padding: 20px; }
         .client-link { color: #3498db; text-decoration: none; }
         .client-link:hover { text-decoration: underline; }
+        
+        /* Form Styling */
+        .form-card { background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px #ccc; margin-bottom: 30px; border-top: 4px solid #3498db; }
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; margin-bottom: 5px; font-weight: bold; color: #34495e; }
+        .form-group select, .form-group input { width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box; background: #fff; }
+        .btn-submit { background: #3498db; color: #fff; border: none; padding: 10px 15px; border-radius: 4px; cursor: pointer; font-weight: bold; }
+        .btn-submit:hover { background: #2980b9; }
+        .alert { padding: 10px; border-radius: 4px; margin-bottom: 20px; font-weight: bold; }
+        .alert-success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .alert-error { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
     </style>
 </head>
 <body>
+    <?php require_once __DIR__ . '/../includes/navigation.php'; ?>
 
-    <div class="header">
-        <h1>📦 Orders</h1>
-        <div class="nav-links">
-            <a href="/">← Home</a>
-            <a href="/customers.php">👥 Customers</a>
-        </div>
-    </div>
+    <div class="container">
+        <h2 class="page-title">Orders Management</h2>
 
-    <!-- 
-    // =========================================================================
-    // SECTION: Status Filter Controls
-    // Purpose: Allows filtering orders by status (pending, shipped, completed)
-    // =========================================================================
-    -->
-    <div style="margin-bottom: 20px; padding: 15px; background: #fff; border-radius: 8px; box-shadow: 0 2px 5px #ccc;">
-        <strong style="color: #2c3e50;">Filter by Status:</strong>
-        <div style="margin-top: 10px; display: flex; gap: 8px; flex-wrap: wrap;">
-            <a href="/orders.php" style="padding: 6px 12px; border-radius: 4px; text-decoration: none; background: <?php echo ($statusFilter === null) ? '#27ae60' : '#95a5a6'; ?>; color: white; transition: background 0.2s;" 
-               onmouseover="this.style.background='<?php echo ($statusFilter === null) ? '#229954' : '#7f8c8d'; ?>'" 
-               onmouseout="this.style.background='<?php echo ($statusFilter === null) ? '#27ae60' : '#95a5a6'; ?>'">
-                All Orders
-            </a>
-            <a href="/orders.php?status=pending" style="padding: 6px 12px; border-radius: 4px; text-decoration: none; background: <?php echo ($statusFilter === 'pending') ? '#f39c12' : '#95a5a6'; ?>; color: white; transition: background 0.2s;" 
-               onmouseover="this.style.background='<?php echo ($statusFilter === 'pending') ? '#e67e22' : '#7f8c8d'; ?>'" 
-               onmouseout="this.style.background='<?php echo ($statusFilter === 'pending') ? '#f39c12' : '#95a5a6'; ?>'">
-                Pending
-            </a>
-            <a href="/orders.php?status=shipped" style="padding: 6px 12px; border-radius: 4px; text-decoration: none; background: <?php echo ($statusFilter === 'shipped') ? '#3498db' : '#95a5a6'; ?>; color: white; transition: background 0.2s;" 
-               onmouseover="this.style.background='<?php echo ($statusFilter === 'shipped') ? '#2980b9' : '#7f8c8d'; ?>'" 
-               onmouseout="this.style.background='<?php echo ($statusFilter === 'shipped') ? '#3498db' : '#95a5a6'; ?>'">
-                Shipped
-            </a>
-            <a href="/orders.php?status=completed" style="padding: 6px 12px; border-radius: 4px; text-decoration: none; background: <?php echo ($statusFilter === 'completed') ? '#27ae60' : '#95a5a6'; ?>; color: white; transition: background 0.2s;" 
-               onmouseover="this.style.background='<?php echo ($statusFilter === 'completed') ? '#229954' : '#7f8c8d'; ?>'" 
-               onmouseout="this.style.background='<?php echo ($statusFilter === 'completed') ? '#27ae60' : '#95a5a6'; ?>'">
-                Completed
-            </a>
-        </div>
-    </div>
-    <!-- -------------------------------------------------------------------------
-    // END SECTION: Status Filter Controls
-    // -------------------------------------------------------------------------
-    -->
+        <!-- 
+        // =========================================================================
+        // SECTION: Notifications
+        // Purpose: Displays success or error messages.
+        // =========================================================================
+        -->
+        <?php if (isset($_GET['success']) && $_GET['success'] === 'order_created'): ?>
+            <div class="alert alert-success">✓ New order placed successfully!</div>
+        <?php endif; ?>
+        
+        <?php if (isset($error)): ?>
+            <div class="alert alert-error">⚠ <?= htmlspecialchars($error) ?></div>
+        <?php endif; ?>
+        <!-- -------------------------------------------------------------------------
+        // END SECTION: Notifications
+        // -------------------------------------------------------------------------
+        -->
 
-    <?php if (empty($orders)): ?>
-        <div class="card empty-message">
-            <p>
-                <?php if ($statusFilter !== null): ?>
-                    No orders found with status: <strong><?php echo htmlspecialchars(ucfirst($statusFilter)); ?></strong>
-                <?php else: ?>
-                    No orders found.
-                <?php endif; ?>
-            </p>
-        </div>
-    <?php else: ?>
-        <?php foreach ($orders as $order): ?>
-            <div class="card">
-                <div class="order-header">
-                    <div>
-                        <span>Order #<?php echo htmlspecialchars($order->id); ?></span>
-                        <span class="status-badge status-<?php echo strtolower($order->status); ?>">
-                            <?php echo htmlspecialchars(ucfirst($order->status)); ?>
-                        </span>
+        <!-- 
+        // =========================================================================
+        // SECTION: Order Creation Form
+        // Purpose: Form to place a new order for a customer.
+        // =========================================================================
+        -->
+        <div class="form-card">
+            <h3 style="margin-top: 0; color: #3498db;">Place New Order</h3>
+            <form method="POST" action="orders.php">
+                <input type="hidden" name="action" value="create_order">
+                
+                <div class="form-group">
+                    <label for="client_id">Customer</label>
+                    <select name="client_id" id="client_id" required>
+                        <option value="">-- Select Customer --</option>
+                        <?php foreach ($clients as $c): ?>
+                            <option value="<?= $c->id ?>"><?= htmlspecialchars($c->name) ?> (<?= htmlspecialchars($c->email) ?>)</option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
+
+                <div style="display: flex; gap: 15px;">
+                    <div class="form-group" style="flex: 2;">
+                        <label for="product_id">Product</label>
+                        <select name="product_id" id="product_id" required>
+                            <option value="">-- Select Product --</option>
+                            <?php foreach ($products as $p): ?>
+                                <option value="<?= $p['id'] ?>"><?= htmlspecialchars($p['name']) ?> - €<?= number_format($p['price'], 2) ?></option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+                    <div class="form-group" style="flex: 1;">
+                        <label for="quantity">Quantity</label>
+                        <input type="number" id="quantity" name="quantity" value="1" min="1" required>
                     </div>
                 </div>
 
-                <div class="order-meta">
-                    <strong>Customer:</strong> 
-                    <span class="client-link"><?php echo htmlspecialchars($order->client_name); ?></span>
-                    (<?php echo htmlspecialchars($order->client_email); ?>)
+                <div class="form-group">
+                    <label for="status">Initial Status</label>
+                    <select name="status" id="status">
+                        <option value="pending">Pending</option>
+                        <option value="shipped">Shipped</option>
+                        <option value="completed">Completed</option>
+                    </select>
                 </div>
 
-                <div class="order-meta">
-                    <strong>Order Date:</strong> <?php echo htmlspecialchars($order->date); ?>
-                </div>
+                <button type="submit" class="btn-submit">Place Order</button>
+            </form>
+        </div>
+        <!-- -------------------------------------------------------------------------
+        // END SECTION: Order Creation Form
+        // -------------------------------------------------------------------------
+        -->
 
-                <?php if (!empty($order->items)): ?>
-                    <div class="items-section">
-                        <div class="items-header">Items:</div>
-                        <?php $total = 0; ?>
-                        <?php foreach ($order->items as $item): ?>
-                            <?php $itemTotal = $item->getTotal(); $total += $itemTotal; ?>
-                            <div class="item-row">
-                                <div class="item-details">
-                                    <div class="item-product"><?php echo htmlspecialchars($item->product); ?></div>
-                                    <div class="item-qty">Qty: <?php echo htmlspecialchars($item->qty); ?></div>
-                                </div>
-                                <div class="item-price">
-                                    $<?php echo number_format($item->price, 2); ?>
-                                    <br>
-                                    <span style="color: #27ae60; font-weight: bold;">$<?php echo number_format($itemTotal, 2); ?></span>
-                                </div>
-                            </div>
-                        <?php endforeach; ?>
-                        <div class="order-total">
-                            Total: $<?php echo number_format($total, 2); ?>
+        <div class="header">
+            <h1>📦 Orders</h1>
+            <div class="nav-links">
+                <a href="/">← Home</a>
+                <a href="/customers.php">👥 Customers</a>
+            </div>
+        </div>
+
+        <!-- 
+        // =========================================================================
+        // SECTION: Status Filter Controls
+        // Purpose: Allows filtering orders by status (pending, shipped, completed)
+        // =========================================================================
+        -->
+        <div style="margin-bottom: 20px; padding: 15px; background: #fff; border-radius: 8px; box-shadow: 0 2px 5px #ccc;">
+            <strong style="color: #2c3e50;">Filter by Status:</strong>
+            <div style="margin-top: 10px; display: flex; gap: 8px; flex-wrap: wrap;">
+                <a href="/orders.php" style="padding: 6px 12px; border-radius: 4px; text-decoration: none; background: <?php echo ($statusFilter === null) ? '#27ae60' : '#95a5a6'; ?>; color: white; transition: background 0.2s;" 
+                   onmouseover="this.style.background='<?php echo ($statusFilter === null) ? '#229954' : '#7f8c8d'; ?>'" 
+                   onmouseout="this.style.background='<?php echo ($statusFilter === null) ? '#27ae60' : '#95a5a6'; ?>'">
+                    All Orders
+                </a>
+                <a href="/orders.php?status=pending" style="padding: 6px 12px; border-radius: 4px; text-decoration: none; background: <?php echo ($statusFilter === 'pending') ? '#f39c12' : '#95a5a6'; ?>; color: white; transition: background 0.2s;" 
+                   onmouseover="this.style.background='<?php echo ($statusFilter === 'pending') ? '#e67e22' : '#7f8c8d'; ?>'" 
+                   onmouseout="this.style.background='<?php echo ($statusFilter === 'pending') ? '#f39c12' : '#95a5a6'; ?>'">
+                    Pending
+                </a>
+                <a href="/orders.php?status=shipped" style="padding: 6px 12px; border-radius: 4px; text-decoration: none; background: <?php echo ($statusFilter === 'shipped') ? '#3498db' : '#95a5a6'; ?>; color: white; transition: background 0.2s;" 
+                   onmouseover="this.style.background='<?php echo ($statusFilter === 'shipped') ? '#2980b9' : '#7f8c8d'; ?>'" 
+                   onmouseout="this.style.background='<?php echo ($statusFilter === 'shipped') ? '#3498db' : '#95a5a6'; ?>'">
+                    Shipped
+                </a>
+                <a href="/orders.php?status=completed" style="padding: 6px 12px; border-radius: 4px; text-decoration: none; background: <?php echo ($statusFilter === 'completed') ? '#27ae60' : '#95a5a6'; ?>; color: white; transition: background 0.2s;" 
+                   onmouseover="this.style.background='<?php echo ($statusFilter === 'completed') ? '#229954' : '#7f8c8d'; ?>'" 
+                   onmouseout="this.style.background='<?php echo ($statusFilter === 'completed') ? '#27ae60' : '#95a5a6'; ?>'">
+                    Completed
+                </a>
+            </div>
+        </div>
+        <!-- -------------------------------------------------------------------------
+        // END SECTION: Status Filter Controls
+        // -------------------------------------------------------------------------
+        -->
+
+        <?php if (empty($orders)): ?>
+            <div class="card empty-message">
+                <p>
+                    <?php if ($statusFilter !== null): ?>
+                        No orders found with status: <strong><?php echo htmlspecialchars(ucfirst($statusFilter)); ?></strong>
+                    <?php else: ?>
+                        No orders found.
+                    <?php endif; ?>
+                </p>
+            </div>
+        <?php else: ?>
+            <?php foreach ($orders as $order): ?>
+                <div class="card">
+                    <div class="order-header">
+                        <div>
+                            <span>Order #<?php echo htmlspecialchars($order->id); ?></span>
+                            <span class="status-badge status-<?php echo strtolower($order->status); ?>">
+                                <?php echo htmlspecialchars(ucfirst($order->status)); ?>
+                            </span>
                         </div>
                     </div>
-                <?php else: ?>
-                    <div class="items-section empty-message">
-                        No items in this order
-                    </div>
-                <?php endif; ?>
-            </div>
-        <?php endforeach; ?>
-    <?php endif; ?>
 
+                    <div class="order-meta">
+                        <strong>Customer:</strong> 
+                        <span class="client-link"><?php echo htmlspecialchars($order->client_name); ?></span>
+                        (<?php echo htmlspecialchars($order->client_email); ?>)
+                    </div>
+
+                    <div class="order-meta">
+                        <strong>Order Date:</strong> <?php echo htmlspecialchars($order->date); ?>
+                    </div>
+
+                    <?php if (!empty($order->items)): ?>
+                        <div class="items-section">
+                            <div class="items-header">Items:</div>
+                            <?php $total = 0; ?>
+                            <?php foreach ($order->items as $item): ?>
+                                <?php $itemTotal = $item->getTotal(); $total += $itemTotal; ?>
+                                <div class="item-row">
+                                    <div class="item-details">
+                                        <div class="item-product"><?php echo htmlspecialchars($item->product); ?></div>
+                                        <div class="item-qty">Qty: <?php echo htmlspecialchars($item->qty); ?></div>
+                                    </div>
+                                    <div class="item-price">
+                                        €<?php echo number_format($item->price, 2); ?>
+                                        <br>
+                                        <span style="color: #27ae60; font-weight: bold;">€<?php echo number_format($itemTotal, 2); ?></span>
+                                    </div>
+                                </div>
+                            <?php endforeach; ?>
+                            <div class="order-total">
+                                Total: €<?php echo number_format($total, 2); ?>
+                            </div>
+                        </div>
+                    <?php else: ?>
+                        <div class="items-section empty-message">
+                            No items in this order
+                        </div>
+                    <?php endif; ?>
+                </div>
+            <?php endforeach; ?>
+        <?php endif; ?>
+    </div>
 </body>
 </html>
