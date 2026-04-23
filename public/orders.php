@@ -19,24 +19,35 @@ require_once __DIR__ . '/../src/Models/Product.php';
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'create_order') {
     $client_id = (int)($_POST['client_id'] ?? 0);
     $status = $_POST['status'] ?? 'pending';
-    $product_id = (int)($_POST['product_id'] ?? 0);
-    $quantity = (int)($_POST['quantity'] ?? 1);
+    $product_ids = $_POST['product_ids'] ?? [];
+    $quantities = $_POST['quantities'] ?? [];
 
-    if ($client_id > 0 && $product_id > 0 && $quantity > 0) {
-        $items = [
-            ['product_id' => $product_id, 'quantity' => $quantity]
-        ];
+    if ($client_id > 0 && !empty($product_ids)) {
+        $items = [];
+        foreach ($product_ids as $index => $product_id) {
+            $qty = (int)($quantities[$index] ?? 1);
+            if ($product_id > 0 && $qty > 0) {
+                $items[] = [
+                    'product_id' => (int)$product_id,
+                    'quantity' => $qty
+                ];
+            }
+        }
         
-        $orderId = OrderModel::create($client_id, $status, $items);
-        
-        if ($orderId) {
-            header('Location: orders.php?success=order_created');
-            exit;
+        if (!empty($items)) {
+            $orderId = OrderModel::create($client_id, $status, $items);
+            
+            if ($orderId) {
+                header('Location: orders.php?success=order_created');
+                exit;
+            } else {
+                $error = "Failed to create order. Please check the logs.";
+            }
         } else {
-            $error = "Failed to create order. Please check the logs.";
+            $error = "At least one valid product must be selected.";
         }
     } else {
-        $error = "All fields are required.";
+        $error = "Customer and at least one product are required.";
     }
 }
 

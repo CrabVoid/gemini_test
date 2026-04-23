@@ -101,20 +101,25 @@
                     </select>
                 </div>
 
-                <div style="display: flex; gap: 15px;">
-                    <div class="form-group" style="flex: 2;">
-                        <label for="product_id">Product</label>
-                        <select name="product_id" id="product_id" required>
-                            <option value="">-- Select Product --</option>
-                            <?php foreach ($products as $p): ?>
-                                <option value="<?= $p->id ?>"><?= htmlspecialchars($p->name) ?> - €<?= number_format($p->price, 2) ?></option>
-                            <?php endforeach; ?>
-                        </select>
+                <div class="form-group">
+                    <label>Order Items</label>
+                    <div id="items-container">
+                        <div class="item-row-form" style="display: flex; gap: 15px; margin-bottom: 10px;">
+                            <div style="flex: 2;">
+                                <select name="product_ids[]" required>
+                                    <option value="">-- Select Product --</option>
+                                    <?php foreach ($products as $p): ?>
+                                        <option value="<?= $p->id ?>"><?= htmlspecialchars($p->name) ?> - €<?= number_format($p->price, 2) ?></option>
+                                    <?php endforeach; ?>
+                                </select>
+                            </div>
+                            <div style="flex: 1;">
+                                <input type="number" name="quantities[]" value="1" min="1" required placeholder="Qty">
+                            </div>
+                            <button type="button" onclick="removeItem(this)" class="btn-submit" style="background: #e74c3c; padding: 5px 10px; display: none;">×</button>
+                        </div>
                     </div>
-                    <div class="form-group" style="flex: 1;">
-                        <label for="quantity">Quantity</label>
-                        <input type="number" id="quantity" name="quantity" value="1" min="1" required>
-                    </div>
+                    <button type="button" onclick="addItem()" class="btn-submit" style="background: #27ae60; padding: 5px 12px; font-size: 0.9em; margin-top: 5px;">+ Add Another Item</button>
                 </div>
 
                 <div class="form-group">
@@ -143,6 +148,26 @@
                     form.style.display = 'none';
                 }
             });
+
+            function addItem() {
+                var container = document.getElementById('items-container');
+                var firstRow = container.querySelector('.item-row-form');
+                var newRow = firstRow.cloneNode(true);
+                
+                // Clear inputs
+                newRow.querySelector('select').value = '';
+                newRow.querySelector('input').value = '1';
+                
+                // Show remove button
+                newRow.querySelector('button').style.display = 'block';
+                
+                container.appendChild(newRow);
+            }
+
+            function removeItem(btn) {
+                var row = btn.parentNode;
+                row.parentNode.removeChild(row);
+            }
 
             function toggleEditForm(orderId) {
                 var form = document.getElementById('editForm-' + orderId);
