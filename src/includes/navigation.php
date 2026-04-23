@@ -57,15 +57,10 @@ $currentPage = getCurrentPage();
         
         <!-- Right-side Actions -->
         <div style="display: flex; gap: 0;">
-            <!-- Initialize DB Link -->
-            <a href="/init-db.php" style="padding: 15px 20px; color: white; text-decoration: none; transition: background 0.2s; border-left: 1px solid #34495e;" 
-               onmouseover="this.style.background='#e74c3c'" onmouseout="this.style.background='transparent'">
-                🔄 Reset
-            </a>
+            <!-- Empty for now or space for future actions -->
         </div>
-    </div>
-</nav>
-
+        </div>
+        </nav>
 <!-- =========================================================================
 END SECTION: Navigation Component
 ========================================================================= -->

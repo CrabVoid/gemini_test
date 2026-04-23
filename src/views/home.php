@@ -148,21 +148,16 @@
         <div class="section">
             <h2>📍 Quick Navigation</h2>
             <div style="display: flex; gap: 15px; flex-wrap: wrap;">
-                <a href="/customers.php" style="flex: 1; min-width: 150px; padding: 12px; background: #3498db; color: white; text-decoration: none; border-radius: 6px; text-align: center; transition: background 0.2s; font-weight: bold;" 
+                <a href="/customers.php" style="flex: 1; min-width: 150px; padding: 12px; background: #3498db; color: white; text-decoration: none; border-radius: 6px; text-align: center; transition: background 0.2s; font-weight: bold;"
                    onmouseover="this.style.background='#2980b9'" onmouseout="this.style.background='#3498db'">
-                    👥 View Customers
+                    👥 View Customers Directory
                 </a>
-                <a href="/orders.php" style="flex: 1; min-width: 150px; padding: 12px; background: #27ae60; color: white; text-decoration: none; border-radius: 6px; text-align: center; transition: background 0.2s; font-weight: bold;" 
+                <a href="/orders.php" style="flex: 1; min-width: 150px; padding: 12px; background: #27ae60; color: white; text-decoration: none; border-radius: 6px; text-align: center; transition: background 0.2s; font-weight: bold;"
                    onmouseover="this.style.background='#229954'" onmouseout="this.style.background='#27ae60'">
-                    📦 View Orders
-                </a>
-                <a href="/public/init-db.php" style="flex: 1; min-width: 150px; padding: 12px; background: #95a5a6; color: white; text-decoration: none; border-radius: 6px; text-align: center; transition: background 0.2s; font-weight: bold;" 
-                   onmouseover="this.style.background='#7f8c8d'" onmouseout="this.style.background='#95a5a6'">
-                    🔄 Reset Data
+                    📦 Manage Orders
                 </a>
             </div>
-        </div>
-    </div>
+        </div>    </div>
 
 </body>
 </html>
