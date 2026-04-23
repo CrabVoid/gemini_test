@@ -55,6 +55,12 @@
     <?php if (isset($_GET['success']) && $_GET['success'] === 'customer_created'): ?>
         <div class="alert alert-success">✓ New customer added successfully!</div>
     <?php endif; ?>
+
+    <?php if (isset($error)): ?>
+        <div class="alert alert-error" style="background: #f8d7da; color: #721c24; padding: 10px; border-radius: 4px; margin-bottom: 20px; border: 1px solid #f5c6cb;">
+            ⚠ <?= htmlspecialchars($error) ?>
+        </div>
+    <?php endif; ?>
     <!-- -------------------------------------------------------------------------
     // END SECTION: Notifications
     // -------------------------------------------------------------------------

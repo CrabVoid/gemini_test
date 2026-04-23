@@ -14,7 +14,7 @@ require_once __DIR__ . '/../src/Models/Product.php';
 
 // -------------------------------------------------------------------------
 // SUB-SECTION: Handle POST Requests
-// Purpose: Process new order creation.
+// Purpose: Process new order creation with multi-item validation.
 // -------------------------------------------------------------------------
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'create_order') {
     $client_id = (int)($_POST['client_id'] ?? 0);
@@ -22,35 +22,43 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
     $product_ids = $_POST['product_ids'] ?? [];
     $quantities = $_POST['quantities'] ?? [];
 
-    if ($client_id > 0 && !empty($product_ids)) {
-        $items = [];
-        foreach ($product_ids as $index => $product_id) {
-            $qty = (int)($quantities[$index] ?? 1);
-            if ($product_id > 0 && $qty > 0) {
-                $items[] = [
-                    'product_id' => (int)$product_id,
-                    'quantity' => $qty
-                ];
+    $errors = [];
+
+    // 1. Basic Customer Check
+    if ($client_id <= 0) {
+        $errors[] = "Please select a valid customer.";
+    }
+
+    // 2. Multi-Item Validation
+    if (empty($product_ids)) {
+        $errors[] = "Order must contain at least one product.";
+    } else {
+        $validItems = [];
+        foreach ($product_ids as $idx => $pid) {
+            $qty = (int)($quantities[$idx] ?? 0);
+            if ($pid > 0 && $qty > 0) {
+                $validItems[] = ['product_id' => (int)$pid, 'quantity' => $qty];
             }
         }
-        
-        if (!empty($items)) {
-            $orderId = OrderModel::create($client_id, $status, $items);
-            
-            if ($orderId) {
-                header('Location: orders.php?success=order_created');
-                exit;
-            } else {
-                $error = "Failed to create order. Please check the logs.";
-            }
+
+        if (empty($validItems)) {
+            $errors[] = "Each item must have a valid product and quantity > 0.";
+        }
+    }
+
+    // 3. Process or Set Errors
+    if (empty($errors)) {
+        $orderId = OrderModel::create($client_id, $status, $validItems);
+        if ($orderId) {
+            header('Location: orders.php?success=order_created');
+            exit;
         } else {
-            $error = "At least one valid product must be selected.";
+            $error = "Critical: Order creation failed in database transaction.";
         }
     } else {
-        $error = "Customer and at least one product are required.";
+        $error = implode(" ", $errors);
     }
 }
-
 // -------------------------------------------------------------------------
 // SUB-SECTION: Handle Update Request
 // -------------------------------------------------------------------------

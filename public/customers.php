@@ -8,19 +8,33 @@ require_once __DIR__ . '/../src/Models/Customer.php';
 
 // -------------------------------------------------------------------------
 // SUB-SECTION: Handle POST Requests
-// Purpose: Process new customer creation.
+// Purpose: Process new customer creation with validation.
 // -------------------------------------------------------------------------
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'create_customer') {
-    $firstname = $_POST['firstname'] ?? '';
-    $lastname = $_POST['lastname'] ?? '';
-    $email = $_POST['email'] ?? '';
+    $firstname = trim($_POST['firstname'] ?? '');
+    $lastname = trim($_POST['lastname'] ?? '');
+    $email = trim($_POST['email'] ?? '');
     $points = (int)($_POST['points'] ?? 0);
 
-    if (!empty($firstname) && !empty($lastname) && !empty($email)) {
+    $validationErrors = [];
+
+    // 1. Validate Required Fields
+    if (empty($firstname)) $validationErrors[] = "First name is required.";
+    if (empty($lastname))  $validationErrors[] = "Last name is required.";
+    if (empty($email))     $validationErrors[] = "Email address is required.";
+
+    // 2. Validate Email Format
+    if (!empty($email) && !filter_var($email, FILTER_VALIDATE_EMAIL)) {
+        $validationErrors[] = "Invalid email format.";
+    }
+
+    // 3. Process or Set Error
+    if (empty($validationErrors)) {
         CustomerModel::create($firstname, $lastname, $email, $points);
-        // Redirect to avoid form resubmission
         header('Location: customers.php?success=customer_created');
         exit;
+    } else {
+        $error = implode(" ", $validationErrors);
     }
 }
 // -------------------------------------------------------------------------
