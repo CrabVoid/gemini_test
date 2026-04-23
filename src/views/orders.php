@@ -2,334 +2,147 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Tasker - Orders List</title>
+    <title>Manage Orders</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font: 14px Arial, sans-serif; background: #eee; margin: 0; padding: 20px; }
+        body { font: 14px Arial, sans-serif; background: #ecf0f1; padding: 20px; }
         .container { max-width: 1200px; margin: 0 auto; }
-        .page-title { color: #2c3e50; margin-bottom: 20px; border-bottom: 2px solid #3498db; padding-bottom: 10px; }
-        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; display: none; }
-        h1 { color: #2c3e50; display: none; }
-        .nav-links { display: flex; gap: 10px; display: none; }
-        .nav-links a { background: #3498db; color: white; padding: 8px 16px; text-decoration: none; border-radius: 4px; transition: background 0.2s; }
-        .nav-links a:hover { background: #2980b9; }
-        .card { background: #fff; padding: 15px; margin-bottom: 15px; border-radius: 8px; box-shadow: 0 2px 5px #ccc; }
-        .order-header { font-size: 1.1em; font-weight: bold; color: #2c3e50; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
-        .order-meta { color: #7f8c8d; font-size: 0.9em; margin: 5px 0; }
-        .status-badge { display: inline-block; padding: 4px 10px; border-radius: 3px; font-size: 0.85em; font-weight: bold; }
-        .status-pending { background: #f39c12; color: white; }
-        .status-shipped { background: #3498db; color: white; }
-        .status-completed { background: #27ae60; color: white; }
-        .items-section { margin-top: 10px; padding: 10px; background: #f9f9f9; border-left: 3px solid #3498db; }
-        .items-header { font-weight: bold; color: #2980b9; margin-bottom: 8px; }
-        .item-row { display: flex; justify-content: space-between; padding: 5px 0; color: #555; border-bottom: 1px solid #eee; }
-        .item-row:last-child { border-bottom: none; }
-        .item-details { flex: 1; }
-        .item-product { font-weight: 500; }
-        .item-qty { color: #7f8c8d; font-size: 0.9em; }
-        .item-price { text-align: right; font-family: monospace; }
-        .order-total { text-align: right; margin-top: 8px; padding-top: 8px; border-top: 1px dashed #ddd; font-weight: bold; color: #27ae60; }
-        .empty-message { text-align: center; color: #7f8c8d; padding: 20px; }
-        .client-link { color: #3498db; text-decoration: none; }
-        .client-link:hover { text-decoration: underline; }
+        .section { background: white; padding: 25px; border-radius: 8px; margin-bottom: 30px; }
         
-        /* Form Styling */
-        .form-card { background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px #ccc; margin-bottom: 30px; border-top: 4px solid #3498db; }
-        .form-group { margin-bottom: 15px; }
-        .form-group label { display: block; margin-bottom: 5px; font-weight: bold; color: #34495e; }
-        .form-group select, .form-group input { width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box; background: #fff; }
-        .btn-submit { background: #3498db; color: #fff; border: none; padding: 10px 15px; border-radius: 4px; cursor: pointer; font-weight: bold; }
-        .btn-submit:hover { background: #2980b9; }
-        .alert { padding: 10px; border-radius: 4px; margin-bottom: 20px; font-weight: bold; }
-        .alert-success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
-        .alert-error { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { text-align: left; padding: 12px; border-bottom: 1px solid #eee; }
+        
+        /* Statusu krāsas */
+        .badge { padding: 4px 8px; border-radius: 12px; font-size: 0.85em; font-weight: bold; }
+        .badge-pending { background: #fef9e7; color: #f39c12; }
+        .badge-shipped { background: #ebf5fb; color: #3498db; }
+        .badge-completed { background: #e9f7ef; color: #27ae60; }
+
+        .btn { padding: 8px 15px; border: none; border-radius: 4px; cursor: pointer; text-decoration: none; }
+        .btn-green { background: #27ae60; color: white; }
+        .btn-red { background: #e74c3c; color: white; }
+        .btn-blue { background: #3498db; color: white; }
     </style>
 </head>
 <body>
     <?php require_once __DIR__ . '/../includes/navigation.php'; ?>
 
     <div class="container">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-            <h2 class="page-title" style="margin-bottom: 0; border-bottom: none;">Orders Management</h2>
-            <button id="toggleFormBtn" class="btn-submit" style="background: #27ae60;">+ Create New Order</button>
-        </div>
+        <h1>📦 Manage Orders</h1>
 
-        <!-- 
-        // =========================================================================
-        // SECTION: Notifications
-        // Purpose: Displays success or error messages.
-        // =========================================================================
-        -->
-        <?php if (isset($_GET['success']) && $_GET['success'] === 'order_created'): ?>
-            <div class="alert alert-success">✓ New order placed successfully!</div>
-        <?php endif; ?>
-        
-        <?php if (isset($_GET['success']) && $_GET['success'] === 'order_updated'): ?>
-            <div class="alert alert-success">✓ Order updated successfully!</div>
-        <?php endif; ?>
-
-        <?php if (isset($_GET['success']) && $_GET['success'] === 'order_deleted'): ?>
-            <div class="alert alert-success">✓ Order deleted successfully!</div>
-        <?php endif; ?>
-        
-        <?php if (isset($error)): ?>
-            <div class="alert alert-error">⚠ <?= htmlspecialchars($error) ?></div>
-        <?php endif; ?>
-        <!-- -------------------------------------------------------------------------
-        // END SECTION: Notifications
-        // -------------------------------------------------------------------------
-        -->
-
-        <!-- 
-        // =========================================================================
-        // SECTION: Order Creation Form
-        // Purpose: Form to place a new order for a customer.
-        // =========================================================================
-        -->
-        <div id="orderForm" class="form-card" style="display: <?= isset($error) ? 'block' : 'none' ?>;">
-            <h3 style="margin-top: 0; color: #3498db;">Place New Order</h3>
-            <form method="POST" action="orders.php">
-                <input type="hidden" name="action" value="create_order">
+        <!-- Jauna Pasūtījuma Izveide -->
+        <div class="section">
+            <h2>Place New Order</h2>
+            <form action="/orders.php" method="POST" id="order-form">
+                <input type="hidden" name="action" value="create">
                 
-                <div class="form-group">
-                    <label for="client_id">Customer</label>
-                    <select name="client_id" id="client_id" required>
-                        <option value="">-- Select Customer --</option>
-                        <?php foreach ($clients as $c): ?>
-                            <option value="<?= $c->id ?>"><?= htmlspecialchars($c->name) ?> (<?= htmlspecialchars($c->email) ?>)</option>
+                <!-- 1. Izvēlamies Klientu -->
+                <div style="margin-bottom: 15px;">
+                    <label><strong>1. Select Customer:</strong></label><br>
+                    <select name="client_id" required style="width: 100%; padding: 8px; margin-top: 5px;">
+                        <option value="">-- Choose a Customer --</option>
+                        <?php foreach ($customers as $c): ?>
+                            <option value="<?php echo $c->id; ?>">
+                                <?php echo htmlspecialchars($c->firstname . ' ' . $c->lastname); ?> (Points: <?php echo $c->points; ?>)
+                            </option>
                         <?php endforeach; ?>
                     </select>
                 </div>
 
-                <div class="form-group">
-                    <label>Order Items</label>
-                    <div id="items-container">
-                        <div class="item-row-form" style="display: flex; gap: 15px; margin-bottom: 10px;">
-                            <div style="flex: 2;">
-                                <select name="product_ids[]" required>
-                                    <option value="">-- Select Product --</option>
-                                    <?php foreach ($products as $p): ?>
-                                        <option value="<?= $p->id ?>"><?= htmlspecialchars($p->name) ?> - €<?= number_format($p->price, 2) ?></option>
-                                    <?php endforeach; ?>
-                                </select>
-                            </div>
-                            <div style="flex: 1;">
-                                <input type="number" name="quantities[]" value="1" min="1" required placeholder="Qty">
-                            </div>
-                            <button type="button" onclick="removeItem(this)" class="btn-submit" style="background: #e74c3c; padding: 5px 10px; display: none;">×</button>
+                <!-- 2. Pievienojam Preces (Dinamiski) -->
+                <div style="margin-bottom: 15px;">
+                    <label><strong>2. Select Products:</strong></label>
+                    <div id="product-rows-container">
+                        <div class="product-row" style="display: flex; gap: 10px; margin-top: 5px;">
+                            <select name="product_ids[]" required style="flex: 2; padding: 8px;">
+                                <option value="">-- Select Product --</option>
+                                <?php foreach ($products as $p): ?>
+                                    <option value="<?php echo $p->id; ?>"><?php echo htmlspecialchars($p->name); ?> ($<?php echo $p->price; ?>)</option>
+                                <?php endforeach; ?>
+                            </select>
+                            <input type="number" name="quantities[]" value="1" min="1" style="flex: 1; padding: 8px;">
                         </div>
                     </div>
-                    <button type="button" onclick="addItem()" class="btn-submit" style="background: #27ae60; padding: 5px 12px; font-size: 0.9em; margin-top: 5px;">+ Add Another Item</button>
+                    <button type="button" id="add-product-btn" style="margin-top: 10px; background: #ecf0f1; border: 1px solid #bdc3c7; padding: 5px 10px; border-radius: 4px; cursor: pointer;">
+                        ➕ Add Another Product
+                    </button>
                 </div>
 
-                <div class="form-group">
-                    <label for="status">Initial Status</label>
-                    <select name="status" id="status">
-                        <option value="pending">Pending</option>
-                        <option value="shipped">Shipped</option>
-                        <option value="completed">Completed</option>
-                    </select>
-                </div>
-
-                <div style="display: flex; gap: 10px;">
-                    <button type="submit" class="btn-submit">Place Order</button>
-                    <button type="button" onclick="document.getElementById('orderForm').style.display='none'" class="btn-submit" style="background: #95a5a6;">Cancel</button>
-                </div>
+                <button type="submit" class="btn btn-green">Create Order</button>
             </form>
         </div>
 
-        <script>
-            document.getElementById('toggleFormBtn').addEventListener('click', function() {
-                var form = document.getElementById('orderForm');
-                if (form.style.display === 'none') {
-                    form.style.display = 'block';
-                    form.scrollIntoView({ behavior: 'smooth' });
-                } else {
-                    form.style.display = 'none';
-                }
-            });
+        <!-- Pasūtījumu Saraksts -->
+        <div class="section">
+            <h2>Order History</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Order #</th>
+                        <th>Customer</th>
+                        <th>Status</th>
+                        <th>Total Amount</th>
+                        <th>Date</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php foreach ($orders as $order): ?>
+                        <tr>
+                            <td>#<?php echo $order->id; ?></td>
+                            <td><?php echo htmlspecialchars($order->client_name); ?></td>
+                            <td>
+                                <span class="badge badge-<?php echo $order->status; ?>">
+                                    <?php echo strtoupper($order->status); ?>
+                                </span>
+                            </td>
+                            <td><strong>$<?php echo number_format($order->total_amount, 2); ?></strong></td>
+                            <td><?php echo $order->order_date; ?></td>
+                            <td style="display: flex; gap: 5px;">
+                                <!-- Statusa maiņas pogas -->
+                                <?php if ($order->status === 'pending'): ?>
+                                    <form method="POST" action="/orders.php">
+                                        <input type="hidden" name="action" value="update_status">
+                                        <input type="hidden" name="id" value="<?php echo $order->id; ?>">
+                                        <input type="hidden" name="status" value="shipped">
+                                        <button type="submit" class="btn btn-blue" style="font-size: 0.75em;">Mark Shipped</button>
+                                    </form>
+                                <?php elseif ($order->status === 'shipped'): ?>
+                                    <form method="POST" action="/orders.php">
+                                        <input type="hidden" name="action" value="update_status">
+                                        <input type="hidden" name="id" value="<?php echo $order->id; ?>">
+                                        <input type="hidden" name="status" value="completed">
+                                        <button type="submit" class="btn btn-green" style="font-size: 0.75em;">Mark Completed</button>
+                                    </form>
+                                <?php endif; ?>
 
-            function addItem() {
-                var container = document.getElementById('items-container');
-                var firstRow = container.querySelector('.item-row-form');
-                var newRow = firstRow.cloneNode(true);
-                
-                // Clear inputs
-                newRow.querySelector('select').value = '';
-                newRow.querySelector('input').value = '1';
-                
-                // Show remove button
-                newRow.querySelector('button').style.display = 'block';
-                
-                container.appendChild(newRow);
-            }
-
-            function removeItem(btn) {
-                var row = btn.parentNode;
-                row.parentNode.removeChild(row);
-            }
-
-            function toggleEditForm(orderId) {
-                var form = document.getElementById('editForm-' + orderId);
-                form.style.display = form.style.display === 'none' ? 'block' : 'none';
-            }
-        </script>
-        <!-- -------------------------------------------------------------------------
-        // END SECTION: Order Creation Form
-        // -------------------------------------------------------------------------
-        -->
-
-        <div class="header">
-            <h1>📦 Orders</h1>
-            <div class="nav-links">
-                <a href="/">← Home</a>
-                <a href="/customers.php">👥 Customers</a>
-            </div>
+                                <!-- Dzēšanas poga -->
+                                <form method="POST" action="/orders.php" onsubmit="return confirm('Dzēst pasūtījumu?');">
+                                    <input type="hidden" name="action" value="delete">
+                                    <input type="hidden" name="id" value="<?php echo $order->id; ?>">
+                                    <button type="submit" class="btn btn-red" style="font-size: 0.75em;">Delete</button>
+                                </form>
+                            </td>
+                        </tr>
+                    <?php endforeach; ?>
+                </tbody>
+            </table>
         </div>
-
-        <!-- 
-        // =========================================================================
-        // SECTION: Status Filter Controls
-        // Purpose: Allows filtering orders by status (pending, shipped, completed)
-        // =========================================================================
-        -->
-        <div style="margin-bottom: 20px; padding: 15px; background: #fff; border-radius: 8px; box-shadow: 0 2px 5px #ccc;">
-            <strong style="color: #2c3e50;">Filter by Status:</strong>
-            <div style="margin-top: 10px; display: flex; gap: 8px; flex-wrap: wrap;">
-                <a href="/orders.php" style="padding: 6px 12px; border-radius: 4px; text-decoration: none; background: <?php echo ($statusFilter === null) ? '#27ae60' : '#95a5a6'; ?>; color: white; transition: background 0.2s;" 
-                   onmouseover="this.style.background='<?php echo ($statusFilter === null) ? '#229954' : '#7f8c8d'; ?>'" 
-                   onmouseout="this.style.background='<?php echo ($statusFilter === null) ? '#27ae60' : '#95a5a6'; ?>'">
-                    All Orders
-                </a>
-                <a href="/orders.php?status=pending" style="padding: 6px 12px; border-radius: 4px; text-decoration: none; background: <?php echo ($statusFilter === 'pending') ? '#f39c12' : '#95a5a6'; ?>; color: white; transition: background 0.2s;" 
-                   onmouseover="this.style.background='<?php echo ($statusFilter === 'pending') ? '#e67e22' : '#7f8c8d'; ?>'" 
-                   onmouseout="this.style.background='<?php echo ($statusFilter === 'pending') ? '#f39c12' : '#95a5a6'; ?>'">
-                    Pending
-                </a>
-                <a href="/orders.php?status=shipped" style="padding: 6px 12px; border-radius: 4px; text-decoration: none; background: <?php echo ($statusFilter === 'shipped') ? '#3498db' : '#95a5a6'; ?>; color: white; transition: background 0.2s;" 
-                   onmouseover="this.style.background='<?php echo ($statusFilter === 'shipped') ? '#2980b9' : '#7f8c8d'; ?>'" 
-                   onmouseout="this.style.background='<?php echo ($statusFilter === 'shipped') ? '#3498db' : '#95a5a6'; ?>'">
-                    Shipped
-                </a>
-                <a href="/orders.php?status=completed" style="padding: 6px 12px; border-radius: 4px; text-decoration: none; background: <?php echo ($statusFilter === 'completed') ? '#27ae60' : '#95a5a6'; ?>; color: white; transition: background 0.2s;" 
-                   onmouseover="this.style.background='<?php echo ($statusFilter === 'completed') ? '#229954' : '#7f8c8d'; ?>'" 
-                   onmouseout="this.style.background='<?php echo ($statusFilter === 'completed') ? '#27ae60' : '#95a5a6'; ?>'">
-                    Completed
-                </a>
-            </div>
-        </div>
-        <!-- -------------------------------------------------------------------------
-        // END SECTION: Status Filter Controls
-        // -------------------------------------------------------------------------
-        -->
-
-        <?php if (empty($orders)): ?>
-            <div class="card empty-message">
-                <p>
-                    <?php if ($statusFilter !== null): ?>
-                        No orders found with status: <strong><?php echo htmlspecialchars(ucfirst($statusFilter)); ?></strong>
-                    <?php else: ?>
-                        No orders found.
-                    <?php endif; ?>
-                </p>
-            </div>
-        <?php else: ?>
-            <?php foreach ($orders as $order): ?>
-                <div class="card">
-                    <div class="order-header">
-                        <div>
-                            <span>Order #<?php echo htmlspecialchars($order->id); ?></span>
-                            <span class="status-badge status-<?php echo strtolower($order->status); ?>">
-                                <?php echo htmlspecialchars(ucfirst($order->status)); ?>
-                            </span>
-                        </div>
-                    </div>
-
-                    <div class="order-meta">
-                        <strong>Customer:</strong> 
-                        <span class="client-link"><?php echo htmlspecialchars($order->client_name); ?></span>
-                        (<?php echo htmlspecialchars($order->client_email); ?>)
-                    </div>
-
-                    <div class="order-meta">
-                        <strong>Order Date:</strong> <?php echo htmlspecialchars($order->date); ?>
-                    </div>
-
-                    <!-- Actions -->
-                    <div style="margin-top: 15px; display: flex; gap: 10px; border-top: 1px solid #eee; padding-top: 10px;">
-                        <button onclick="toggleEditForm(<?= $order->id ?>)" class="btn-submit" style="padding: 5px 10px; font-size: 0.85em;">Edit Status/Customer</button>
-                        
-                        <form method="POST" action="orders.php" onsubmit="return confirm('Are you sure you want to delete this order?')">
-                            <input type="hidden" name="action" value="delete_order">
-                            <input type="hidden" name="order_id" value="<?= $order->id ?>">
-                            <button type="submit" class="btn-submit" style="background: #e74c3c; padding: 5px 10px; font-size: 0.85em;">Delete</button>
-                        </form>
-                    </div>
-
-                    <!-- Inline Edit Form (Hidden by default) -->
-                    <div id="editForm-<?= $order->id ?>" style="display: none; margin-top: 15px; padding: 15px; border: 1px solid #3498db; border-radius: 4px; background: #f0f7fd;">
-                        <h4 style="margin-top: 0; color: #3498db;">Edit Order #<?= $order->id ?></h4>
-                        <form method="POST" action="orders.php">
-                            <input type="hidden" name="action" value="update_order">
-                            <input type="hidden" name="order_id" value="<?= $order->id ?>">
-                            
-                            <div class="form-group">
-                                <label>Change Customer</label>
-                                <select name="client_id" required>
-                                    <?php foreach ($clients as $c): ?>
-                                        <option value="<?= $c->id ?>" <?= $c->id == $order->client_id ? 'selected' : '' ?>>
-                                            <?= htmlspecialchars($c->name) ?>
-                                        </option>
-                                    <?php endforeach; ?>
-                                </select>
-                            </div>
-
-                            <div class="form-group">
-                                <label>Update Status</label>
-                                <select name="status">
-                                    <option value="pending" <?= $order->status === 'pending' ? 'selected' : '' ?>>Pending</option>
-                                    <option value="shipped" <?= $order->status === 'shipped' ? 'selected' : '' ?>>Shipped</option>
-                                    <option value="completed" <?= $order->status === 'completed' ? 'selected' : '' ?>>Completed</option>
-                                </select>
-                            </div>
-
-                            <div style="display: flex; gap: 10px;">
-                                <button type="submit" class="btn-submit" style="padding: 6px 12px; font-size: 0.9em;">Save Changes</button>
-                                <button type="button" onclick="toggleEditForm(<?= $order->id ?>)" class="btn-submit" style="background: #95a5a6; padding: 6px 12px; font-size: 0.9em;">Cancel</button>
-                            </div>
-                        </form>
-                    </div>
-
-                    <?php if (!empty($order->items)): ?>
-                        <div class="items-section">
-                            <div class="items-header">Items:</div>
-                            <?php $total = 0; ?>
-                            <?php foreach ($order->items as $item): ?>
-                                <?php $itemTotal = $item->getTotal(); $total += $itemTotal; ?>
-                                <div class="item-row">
-                                    <div class="item-details">
-                                        <div class="item-product"><?php echo htmlspecialchars($item->product); ?></div>
-                                        <div class="item-qty">Qty: <?php echo htmlspecialchars($item->qty); ?></div>
-                                    </div>
-                                    <div class="item-price">
-                                        €<?php echo number_format($item->price, 2); ?>
-                                        <br>
-                                        <span style="color: #27ae60; font-weight: bold;">€<?php echo number_format($itemTotal, 2); ?></span>
-                                    </div>
-                                </div>
-                            <?php endforeach; ?>
-                            <div class="order-total">
-                                Total: €<?php echo number_format($total, 2); ?>
-                            </div>
-                        </div>
-                    <?php else: ?>
-                        <div class="items-section empty-message">
-                            No items in this order
-                        </div>
-                    <?php endif; ?>
-                </div>
-            <?php endforeach; ?>
-        <?php endif; ?>
     </div>
+
+    <!-- JavaScript priekš dinamiskām preču rindām -->
+    <script>
+        document.getElementById('add-product-btn').addEventListener('click', function() {
+            const container = document.getElementById('product-rows-container');
+            const firstRow = container.querySelector('.product-row');
+            const newRow = firstRow.cloneNode(true);
+            
+            // Notīrām izvēli jaunajā rindā
+            newRow.querySelector('select').value = "";
+            newRow.querySelector('input').value = "1";
+            
+            container.appendChild(newRow);
+        });
+    </script>
 </body>
 </html>

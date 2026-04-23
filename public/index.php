@@ -1,15 +1,17 @@
 <?php
-ini_set('display_errors', 1);
-error_reporting(E_ALL);
+require_once __DIR__ . '/../src/Models/Statistics.php';
 
 // =========================================================================
-// SECTION: Main Router
-// Purpose: Routes requests to home page (serves as main landing page).
+// SECTION: Home Controller
+// Purpose: Prepares data for the dashboard landing page.
 // =========================================================================
 
-require_once __DIR__ . '/home.php';
+// 1. Iegūstam apkopotos statistikas datus no modeļa
+$stats = StatisticsModel::getDashboardStats();
 
-// -------------------------------------------------------------------------
-// END SECTION: Main Router
-// -------------------------------------------------------------------------
+// 2. Ielādējam vizuālo skatu
+require_once __DIR__ . '/../src/views/home.php';
+// =========================================================================
+// END SECTION: Home Controller
+// =========================================================================
 ?>
