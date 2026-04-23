@@ -12,6 +12,7 @@ function getCurrentPage() {
     if ($script === 'index.php' || $script === 'home.php') return 'home';
     if ($script === 'customers.php') return 'customers';
     if ($script === 'orders.php') return 'orders';
+    if ($script === 'delivery.php') return 'delivery';
     return '';
 }
 
@@ -30,22 +31,24 @@ $currentPage = getCurrentPage();
         <!-- Navigation Links -->
         <div style="display: flex; flex: 1; margin-left: 0;">
             
-            <!-- Dashboard Link (Highlight if active) -->
             <a href="/" style="padding: 15px 20px; color: white; text-decoration: none; transition: background 0.2s; background: <?php echo ($currentPage === 'home') ? '#3498db' : 'transparent'; ?>;"
                onmouseover="this.style.background='#3498db'" onmouseout="this.style.background='<?php echo ($currentPage === 'home') ? '#3498db' : 'transparent'; ?>'">
-                🏠 Home
+                🏠 Sākums
             </a>
             
-            <!-- Customers Link -->
             <a href="/customers.php" style="padding: 15px 20px; color: white; text-decoration: none; transition: background 0.2s; background: <?php echo ($currentPage === 'customers') ? '#3498db' : 'transparent'; ?>;"
                onmouseover="this.style.background='#3498db'" onmouseout="this.style.background='<?php echo ($currentPage === 'customers') ? '#3498db' : 'transparent'; ?>'">
-                👥 Customers
+                👥 Klienti
             </a>
             
-            <!-- Orders Link -->
             <a href="/orders.php" style="padding: 15px 20px; color: white; text-decoration: none; transition: background 0.2s; background: <?php echo ($currentPage === 'orders') ? '#3498db' : 'transparent'; ?>;"
                onmouseover="this.style.background='#3498db'" onmouseout="this.style.background='<?php echo ($currentPage === 'orders') ? '#3498db' : 'transparent'; ?>'">
-                📦 Orders
+                📦 Pasūtījumi
+            </a>
+
+            <a href="/delivery.php" style="padding: 15px 20px; color: white; text-decoration: none; transition: background 0.2s; background: <?php echo ($currentPage === 'delivery') ? '#3498db' : 'transparent'; ?>;"
+               onmouseover="this.style.background='#3498db'" onmouseout="this.style.background='<?php echo ($currentPage === 'delivery') ? '#3498db' : 'transparent'; ?>'">
+                🚚 Piegāde
             </a>
         </div>
     </div>

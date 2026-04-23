@@ -1,12 +1,11 @@
 <?php
 // =========================================================================
-// SECTION: Data Classes (Entities)
-// Purpose: Standardized objects representing rows in the database.
+// SECTION: Models Definitions
+// Purpose: Defines Simple Objects for DB Hydration.
 // =========================================================================
 
 /**
- * SUB-SECTION: Client Class
- * Represents a single customer in the 'clients' table.
+ * SUB-SECTION: Client Model
  */
 class Client {
     public $id;
@@ -17,45 +16,56 @@ class Client {
 }
 
 /**
- * SUB-SECTION: Product Class
- * Represents a single item in the 'products' table.
+ * SUB-SECTION: Delivery Company Model
  */
-class Product {
+class DeliveryCompany {
     public $id;
     public $name;
-    public $price;
+    public $comments;
+    public $base_cost;
+    public $cost_per_kg;
 }
 
 /**
- * SUB-SECTION: Order Class
- * Represents a single transaction in the 'orders' table.
+ * SUB-SECTION: Order Model
  */
 class Order {
     public $id;
     public $client_id;
-    public $status;
+    public $delivery_company_id;
     public $order_date;
-    
-    // Papildu lauki, kas tiek pievienoti no citām tabulām (JOIN)
+    public $status;
+    public $delivery_date;
+    public $tax_rate;
+    public $shipping_cost;
+    public $total_profit;
+
+    // Joins
     public $client_name;
     public $total_amount;
+    public $delivery_name;
 }
 
 /**
- * SUB-SECTION: OrderItem Class
- * Represents a specific product within a single order.
+ * SUB-SECTION: Product Model
+ */
+class Product {
+    public $id;
+    public $name;
+    public $price;      // Sell Price
+    public $buy_price;  // Buy Price
+    public $weight;     // Weight in kg
+}
+
+/**
+ * SUB-SECTION: OrderItem Model
  */
 class OrderItem {
     public $id;
     public $order_id;
     public $product_id;
     public $quantity;
-    public $price_at_purchase; // Fiksēta cena pirkuma brīdī
-    
-    // Papildu lauks ērtai rādīšanai
-    public $product_name;
+    public $price_at_purchase;
+    public $buy_price_at_purchase;
 }
-// =========================================================================
-// END SECTION: Data Classes
-// =========================================================================
 ?>

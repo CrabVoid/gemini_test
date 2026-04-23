@@ -1,6 +1,7 @@
 <?php
 require_once __DIR__ . '/../../db/Database.php';
 require_once __DIR__ . '/../../Models.php';
+require_once __DIR__ . '/DeliveryCompany.php';
 
 // =========================================================================
 // SECTION: Order Model
@@ -10,20 +11,17 @@ class OrderModel {
 
     /**
      * SUB-SECTION: Fetch All Orders
-     * Purpose: Get orders with customer names and total amounts (JOINs).
      */
     public static function all() {
         $db = Database::getConnection();
         
-        // Sarežģīts SQL: 
-        // 1. Apvienojam (JOIN) pasūtījumus ar klientiem, lai dabūtu vārdu.
-        // 2. Apvienojam (JOIN) ar precēm, lai saskaitītu (SUM) kopējo summu.
-        // 3. Grupējam (GROUP BY), lai katrs pasūtījums būtu viena rinda.
         $sql = "SELECT o.*, 
                        (c.firstname || ' ' || c.lastname) as client_name,
+                       dc.name as delivery_name,
                        SUM(oi.quantity * oi.price_at_purchase) as total_amount
                 FROM orders o
                 JOIN clients c ON o.client_id = c.id
+                LEFT JOIN delivery_companies dc ON o.delivery_company_id = dc.id
                 LEFT JOIN order_items oi ON o.id = oi.order_id
                 GROUP BY o.id
                 ORDER BY o.id DESC";
@@ -33,66 +31,89 @@ class OrderModel {
     }
 
     /**
-     * SUB-SECTION: Create Order with Items
-     * Purpose: Inserts a new order and its items in a single transaction.
+     * SUB-SECTION: Create Order with Profit & Tax
      */
     public static function create($data) {
         $db = Database::getConnection();
-        
-        // 1. Sākam transakciju: ja kāds solis neizdosies, nekas netiks saglabāts
         $db->beginTransaction();
 
         try {
-            // 2. Izveidojam galveno pasūtījuma ierakstu
-            $stmt = $db->prepare("INSERT INTO orders (client_id, status, order_date) VALUES (:client_id, 'pending', datetime('now'))");
-            $stmt->execute([':client_id' => $data['client_id']]);
+            $dc = DeliveryCompanyModel::find($data['delivery_company_id']);
+            $taxRate = 0.21; // 21% PVN
             
-            // 3. Iegūstam tikko izveidotā pasūtījuma ID
+            // 1. Aprēķinām svaru un kopējās cenas (Weight & Prices)
+            $totalWeight = 0;
+            $totalSell = 0;
+            $totalBuy = 0;
+            $processedItems = [];
+
+            foreach ($data['items'] as $item) {
+                $prodStmt = $db->prepare("SELECT price, buy_price, weight FROM products WHERE id = :id");
+                $prodStmt->execute([':id' => $item['product_id']]);
+                $product = $prodStmt->fetch(PDO::FETCH_ASSOC);
+
+                $qty = (int)$item['quantity'];
+                $totalWeight += $product['weight'] * $qty;
+                $totalSell += $product['price'] * $qty;
+                $totalBuy += $product['buy_price'] * $qty;
+
+                $processedItems[] = [
+                    'pid'   => $item['product_id'],
+                    'qty'   => $qty,
+                    'price' => $product['price'],
+                    'buy'   => $product['buy_price']
+                ];
+            }
+
+            // 2. Aprēķinām piegādes izmaksas (Shipping Cost)
+            $shipping = $dc ? ($dc->base_cost + ($dc->cost_per_kg * $totalWeight)) : 0;
+            
+            // 3. Aprēķinām nodokli un peļņu (Tax & Profit)
+            $taxAmount = $totalSell * $taxRate;
+            $profit = ($totalSell - $totalBuy) - $taxAmount - $shipping;
+
+            // 4. Saglabājam pasūtījumu
+            $stmt = $db->prepare("INSERT INTO orders (client_id, delivery_company_id, status, tax_rate, shipping_cost, total_profit, order_date) 
+                                 VALUES (:cid, :dcid, 'pending', :tax, :ship, :profit, datetime('now'))");
+            $stmt->execute([
+                ':cid'   => $data['client_id'],
+                ':dcid'  => $data['delivery_company_id'],
+                ':tax'   => $taxRate,
+                ':ship'  => $shipping,
+                ':profit' => $profit
+            ]);
+            
             $orderId = $db->lastInsertId();
 
-            // 4. Pievienojam pasūtījuma preces
-            foreach ($data['items'] as $item) {
-                // Atrodam aktuālo produkta cenu pirkuma brīdī (Price Locking)
-                $prodStmt = $db->prepare("SELECT price FROM products WHERE id = :id");
-                $prodStmt->execute([':id' => $item['product_id']]);
-                $price = $prodStmt->fetchColumn();
-
-                // Ievietojam preces rindu
-                $itemStmt = $db->prepare("INSERT INTO order_items (order_id, product_id, quantity, price_at_purchase) 
-                                        VALUES (:oid, :pid, :qty, :price)");
+            // 5. Saglabājam preces ar vēsturiskajām cenām
+            foreach ($processedItems as $pi) {
+                $itemStmt = $db->prepare("INSERT INTO order_items (order_id, product_id, quantity, price_at_purchase, buy_price_at_purchase) 
+                                        VALUES (:oid, :pid, :qty, :price, :buy)");
                 $itemStmt->execute([
                     ':oid'   => $orderId,
-                    ':pid'   => $item['product_id'],
-                    ':qty'   => $item['quantity'],
-                    ':price' => $price
+                    ':pid'   => $pi['pid'],
+                    ':qty'   => $pi['qty'],
+                    ':price' => $pi['price'],
+                    ':buy'   => $pi['buy']
                 ]);
             }
 
-            // 5. Ja viss izdevās, apstiprinām izmaiņas
             $db->commit();
             return true;
         } catch (Exception $e) {
-            // 6. Ja radās kļūda, atceļam pilnīgi visu (Rollback)
             $db->rollBack();
             return false;
         }
     }
 
-    /**
-     * SUB-SECTION: Update Order Status
-     */
     public static function updateStatus($id, $status) {
         $db = Database::getConnection();
         $stmt = $db->prepare("UPDATE orders SET status = :status WHERE id = :id");
         return $stmt->execute([':status' => $status, ':id' => $id]);
     }
 
-    /**
-     * SUB-SECTION: Delete Order
-     */
     public static function delete($id) {
         $db = Database::getConnection();
-        // Pateicoties datubāzes ON DELETE CASCADE, automātiski tiks dzēsti arī saistītie order_items
         $stmt = $db->prepare("DELETE FROM orders WHERE id = :id");
         return $stmt->execute([':id' => $id]);
     }
